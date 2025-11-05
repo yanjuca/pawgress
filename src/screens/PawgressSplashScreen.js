@@ -2,17 +2,16 @@ import React, { useEffect } from 'react';
 import {
   StyleSheet,
   View,
-  Text,
+  Image,
   Animated,
   StatusBar,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 
 export default function PawgressSplashScreen() {
   const navigation = useNavigation();
   const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.3);
+  const scaleAnim = new Animated.Value(0.8);
 
   useEffect(() => {
     // Animação de entrada
@@ -32,7 +31,7 @@ export default function PawgressSplashScreen() {
 
     // Navega para Home após 2.5 segundos
     const timer = setTimeout(() => {
-      navigation.replace('Home'); // Use 'replace' para não deixar voltar pra splash
+      navigation.replace('Login');
     }, 2500);
 
     return () => clearTimeout(timer);
@@ -42,13 +41,14 @@ export default function PawgressSplashScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
-      <LinearGradient
-        colors={['#9d7350', '#2d3a2c']}
-        start={[0.5, 0]}
-        end={[0.5, 1]}
-        style={styles.background}
+      {/* Background Image */}
+      <Image 
+        source={require('../../assets/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
       />
 
+      {/* Logo com animação */}
       <Animated.View
         style={[
           styles.logoContainer,
@@ -58,17 +58,12 @@ export default function PawgressSplashScreen() {
           },
         ]}
       >
-        <View style={styles.pawIconContainer}>
-          <Text style={styles.pawIcon}>🐾</Text>
-        </View>
-        
-        <Text style={styles.title}>pawgress</Text>
-        <Text style={styles.subtitle}>acompanhe o progresso do seu pet</Text>
+        <Image 
+          source={require('../../assets/pawgresslogo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
       </Animated.View>
-
-      {/* Decorações */}
-      <View style={styles.decorLeft} />
-      <View style={styles.decorRight} />
     </View>
   );
 }
@@ -78,52 +73,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#2d3a2c',
   },
-  background: {
-    ...StyleSheet.absoluteFillObject,
+  backgroundImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
   },
   logoContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  pawIconContainer: {
-    marginBottom: 20,
-    transform: [{ rotate: '-15deg' }],
-  },
-  pawIcon: {
-    fontSize: 80,
-  },
-  title: {
-    fontSize: 56,
-    fontWeight: '700',
-    color: '#fff',
-    textTransform: 'lowercase',
-    letterSpacing: 2,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
-    textTransform: 'lowercase',
-    letterSpacing: 1,
-  },
-  decorLeft: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: 120,
-    height: 120,
-    backgroundColor: '#9d7350',
-    borderTopRightRadius: 120,
-    opacity: 0.6,
-  },
-  decorRight: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 120,
-    height: 120,
-    backgroundColor: '#9fdc7c',
-    borderBottomLeftRadius: 120,
-    opacity: 0.6,
+  logo: {
+    width: 250,
+    height: 250,
   },
 });
