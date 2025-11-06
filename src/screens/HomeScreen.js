@@ -1,54 +1,73 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
 import { Eye, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react-native';
+import Header from '../../components/Header';
+import Sidebar from '../../components/Sidebar';
 
-export default function PawgressApp() {
+
+export default function HomeScreen() {
   const [currentPet, setCurrentPet] = useState(0);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
   const pets = [
     {
-      name: "Pibble",
+      name: 'Pibble',
       number: 2,
-      image: "https://heapet.com/cdn/shop/articles/what-is-a-pibble-dog-smile_7b0f5b3b-0901-48a5-8e7e-0f48f3417712.webp?v=1751761402",
-      healthStatus: "Great Pawgress!",
-      lastCheckup: "Dr. Evans (Vetamin Clinic) on 10/20/2025",
-      weight: "4.5 kg (On target for age)",
-      energy: "High (Daily walks to play)",
+      image:
+        'https://heapet.com/cdn/shop/articles/what-is-a-pibble-dog-smile_7b0f5b3b-0901-48a5-8e7e-0f48f3417712.webp?v=1751761402',
+      healthStatus: 'Great Pawgress!',
+      lastCheckup: 'Dr. Evans (Vetamin Clinic) on 10/20/2025',
+      weight: '4.5 kg (On target for age)',
+      energy: 'High (Daily walks to play)',
       upcoming: [
-        { item: "Vaccine Booster", date: "Due 11/25/2025" },
-        { item: "Flea/Tick Prevention", date: "Due 11/01/2025" }
-      ]
-    }
+        { item: 'Vaccine Booster', date: 'Due 11/25/2025' },
+        { item: 'Flea/Tick Prevention', date: 'Due 11/01/2025' },
+      ],
+    },
   ];
 
   const pet = pets[currentPet];
 
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>pawgress</Text>
-          <MoreVertical color="white" size={24} />
-        </View>
+      {/* Header com botão do menu */}
+      <Header title="pawgress" onMenuPress={() => setIsSidebarVisible(true)} />
 
-        {/* Navigation */}
+      {/* Sidebar */}
+      <Sidebar
+        isVisible={isSidebarVisible}
+        onClose={() => setIsSidebarVisible(false)}
+      />
+
+      <View style={styles.card}>
+        {/* Navegação entre pets */}
         <View style={styles.nav}>
           <View style={styles.navButtons}>
-            <ChevronLeft color="white" size={20} />
-            <ChevronRight color="white" size={20} />
+            <TouchableOpacity>
+              <ChevronLeft color="white" size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <ChevronRight color="white" size={20} />
+            </TouchableOpacity>
           </View>
           <Text style={styles.petName}>
             {pet.name}, {pet.number}
           </Text>
         </View>
 
-        {/* Image */}
+        {/* Imagem */}
         <View style={styles.imageContainer}>
           <Image source={{ uri: pet.image }} style={styles.image} />
         </View>
 
-        {/* Health Info */}
+        {/* Informações de saúde */}
         <ScrollView style={styles.infoSection}>
           <View style={styles.infoBox}>
             <Text style={styles.infoTitle}>
@@ -78,7 +97,7 @@ export default function PawgressApp() {
             </View>
           </View>
 
-          {/* Eye Button */}
+          {/* Botão olho */}
           <View style={styles.eyeButtonContainer}>
             <TouchableOpacity style={styles.eyeButton}>
               <Eye color="white" size={22} />
@@ -94,33 +113,22 @@ export default function PawgressApp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#6b7069',
-    padding: 16,
+    paddingHorizontal: 16,
   },
   card: {
-    width: '100%',
-    maxWidth: 400,
+    flex: 1,
     borderRadius: 12,
     backgroundColor: 'rgba(90, 96, 88, 0.95)',
+    marginTop: 20,
     paddingBottom: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  title: {
-    color: 'white',
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   nav: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     alignItems: 'center',
+    marginTop: 10,
   },
   navButtons: {
     flexDirection: 'row',
