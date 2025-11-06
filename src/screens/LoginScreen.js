@@ -93,7 +93,7 @@ export default function PawgressLoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <View style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
       <LinearGradient
@@ -122,16 +122,20 @@ export default function PawgressLoginScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
+          </View>
 
-            <TextInput
-              placeholder="password"
-              placeholderTextColor="rgba(255,255,255,0.7)"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-              style={[styles.input, { marginTop: 12 }]}
-              autoCapitalize="none"
-            />
+          {/* Modal de Login com Blur */}
+          <BlurView intensity={100} tint="dark" style={styles.cardBlur}>
+            <View style={styles.cardInner}>
+              <TextInput
+                placeholder="email"
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
 
             <TouchableOpacity
               style={styles.loginWrapper}
@@ -156,11 +160,10 @@ export default function PawgressLoginScreen() {
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#2d3a2c',
+    backgroundColor: 'transparent',
   },
   background: {
     ...StyleSheet.absoluteFillObject,
