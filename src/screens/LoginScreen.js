@@ -31,88 +31,88 @@ export default function PawgressLoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <View style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-
-      {/* Background Image */}
+      
+      {/* Background Image fora do SafeAreaView */}
       <Image 
         source={require('../../assets/background.png')}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        {/* Logo acima do modal */}
-        <View style={styles.logoContainer}>
-          <Image 
-            source={require('../../assets/pawgresslogo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
-
-        {/* Modal de Login com Blur */}
-        <BlurView intensity={100} tint="dark" style={styles.cardBlur}>
-          <View style={styles.cardInner}>
-            <TextInput
-              placeholder="email"
-              placeholderTextColor="rgba(255,255,255,0.7)"
-              value={email}
-              onChangeText={setEmail}
-              style={styles.input}
-              keyboardType="email-address"
-              autoCapitalize="none"
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
+        >
+          {/* Logo acima do modal */}
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../../assets/pawgresslogo.png')}
+              style={styles.logo}
+              resizeMode="contain"
             />
-
-            <TextInput
-              placeholder="password"
-              placeholderTextColor="rgba(255,255,255,0.7)"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-              style={[styles.input, { marginTop: 12 }]}
-              autoCapitalize="none"
-            />
-
-            <TouchableOpacity 
-              style={styles.loginWrapper} 
-              activeOpacity={0.85}
-              onPress={handleLogin}
-            >
-              <LinearGradient
-                colors={['#c8e99a', '#9fdc7c']}
-                start={[0, 0]}
-                end={[1, 1]}
-                style={styles.loginBtn}
-              >
-                <Text style={styles.loginText}>login</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            {/* Bot�o de Criar Conta */}
-            <TouchableOpacity 
-              style={styles.createAccountBtn}
-              activeOpacity={0.7}
-              onPress={handleCreateAccount}
-            >
-              <Text style={styles.createAccountText}>
-                n�o tem conta? <Text style={styles.createAccountBold}>criar conta</Text>
-              </Text>
-            </TouchableOpacity>
           </View>
-        </BlurView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          {/* Modal de Login com Blur */}
+          <BlurView intensity={100} tint="dark" style={styles.cardBlur}>
+            <View style={styles.cardInner}>
+              <TextInput
+                placeholder="email"
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+
+              <TextInput
+                placeholder="password"
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                style={[styles.input, { marginTop: 12 }]}
+                autoCapitalize="none"
+              />
+
+              <TouchableOpacity 
+                style={styles.loginWrapper} 
+                activeOpacity={0.85}
+                onPress={handleLogin}
+              >
+                <LinearGradient
+                  colors={['#c8e99a', '#9fdc7c']}
+                  start={[0, 0]}
+                  end={[1, 1]}
+                  style={styles.loginBtn}
+                >
+                  <Text style={styles.loginText}>login</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.createAccountBtn}
+                activeOpacity={0.7}
+                onPress={handleCreateAccount}
+              >
+                <Text style={styles.createAccountText}>
+                  não tem conta? <Text style={styles.createAccountBold}>criar</Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#2d3a2c',
+    backgroundColor: 'transparent',
   },
   backgroundImage: {
     position: 'absolute',
