@@ -1,16 +1,24 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from '../screens/LoginScreen';
+
+import SignUpScreen from '../screens/SignUpScreen'; // Tela de cadastro
 import HomeScreen from '../screens/HomeScreen';
+import LoginScreen from '../screens/LoginScreen';
 import AddPetScreen from '../screens/AddPetScreen';
-import ChoosePetScreen from '../screens/ChoosePetScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator initialRouteName="Login">
+    // 🟢 A tela inicial agora é o cadastro
+    <Stack.Navigator initialRouteName="SignUp">
+      <Stack.Screen 
+        name="SignUp" 
+        component={SignUpScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen 
         name="Login" 
         component={LoginScreen} 
