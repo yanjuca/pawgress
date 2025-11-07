@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   createAccountText: {
-    color: 'rgba(255,255,255,0.7)',
+    color: 'rgba(255,255,255,0.8)',
     fontSize: 14,
     textTransform: 'lowercase',
   },
