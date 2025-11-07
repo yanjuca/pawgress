@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import * as Crypto from 'expo-crypto'; // 👈 Import para criptografia
+import * as Crypto from 'expo-crypto';
 
 export default function PawgressLoginScreen() {
   const [email, setEmail] = useState('');
@@ -44,7 +44,6 @@ export default function PawgressLoginScreen() {
       return;
     }
 
-    // 🚫 Verificação de campos obrigatórios
     if (!email.trim() && !password.trim()) {
       Alert.alert('Erro', 'Você deve preencher o email e a senha.');
       return;
@@ -61,20 +60,18 @@ export default function PawgressLoginScreen() {
     }
 
     try {
-      // 🔐 Criptografa senha digitada
       const passwordHash = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
         password
       );
 
-      // Verifica se existe usuário autorizado
       const user = authorizedUsers.find(
         (u) => u.email === email && u.passwordHash === passwordHash
       );
 
       if (user) {
         Alert.alert('Bem-vindo!', 'Login realizado com sucesso ✅');
-        setAttempts(0); // reseta tentativas
+        setAttempts(0);
         navigation.navigate('Home');
       } else {
         setAttempts((prev) => prev + 1);
@@ -93,7 +90,7 @@ export default function PawgressLoginScreen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
       <LinearGradient
@@ -122,20 +119,16 @@ export default function PawgressLoginScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
-          </View>
 
-          {/* Modal de Login com Blur */}
-          <BlurView intensity={100} tint="dark" style={styles.cardBlur}>
-            <View style={styles.cardInner}>
-              <TextInput
-                placeholder="email"
-                placeholderTextColor="rgba(255,255,255,0.7)"
-                value={email}
-                onChangeText={setEmail}
-                style={styles.input}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
+            <TextInput
+              placeholder="senha"
+              placeholderTextColor="rgba(255,255,255,0.7)"
+              value={password}
+              onChangeText={setPassword}
+              style={[styles.input, { marginTop: 15 }]}
+              secureTextEntry
+              autoCapitalize="none"
+            />
 
             <TouchableOpacity
               style={styles.loginWrapper}
@@ -160,6 +153,7 @@ export default function PawgressLoginScreen() {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
