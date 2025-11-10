@@ -1,16 +1,14 @@
 import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 import PawgressSplashScreen from './src/screens/PawgressSplashScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import AddPetScreen from './src/screens/AddPet.Screen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ChoosePetScreen from './src/screens/ChoosePetScreen';
-
+import EditProfileScreen from './src/screens/EditProfileScreen';
 const Stack = createNativeStackNavigator();
-
 export default function App() {
   return (
     <NavigationContainer>
@@ -24,7 +22,9 @@ export default function App() {
         <Stack.Screen name="AddPet" component={AddPetScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="ChoosePet" component={ChoosePetScreen} />
+        <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+

@@ -12,13 +12,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen({ navigation }) {
   const handleEditProfile = () => {
+    // Navega para a tela de editar perfil
     console.log('Editar Perfil');
-    // navigation.navigate('EditProfile');
+    navigation.navigate('EditProfile');
   };
 
   const handleHelp = () => {
     console.log('Ajuda e Feedback');
-    // navigation.navigate('Help');
+    // navigation.navigate('Help'); // Descomente se implementar a tela de ajuda
   };
 
   const handleLogout = () => {
