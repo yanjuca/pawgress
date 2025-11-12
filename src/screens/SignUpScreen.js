@@ -64,8 +64,8 @@ export default function PawgressSignUpScreen() {
     // Caso tudo esteja certo
     Alert.alert('Cadastro concluído 🎉', 'Conta criada com sucesso!', [
       {
-        text: 'Ir para login',
-        onPress: () => navigation.navigate('Login'),
+        text: 'Ir para home',
+        onPress: () => navigation.navigate('Home'),
       },
     ]);
   };
@@ -145,7 +145,7 @@ export default function PawgressSignUpScreen() {
               <TouchableOpacity 
                 style={styles.createAccountBtn}
                 activeOpacity={0.7}
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate('Home')}
               >
                 <Text style={styles.createAccountText}>
                   já tem conta? <Text style={styles.createAccountBold}>entrar</Text>

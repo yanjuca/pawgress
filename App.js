@@ -8,6 +8,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import AddPetScreen from './src/screens/AddPetScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import EditProfileScreen from './src/screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,11 +20,12 @@ export default function App() {
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Splash" component={PawgressSplashScreen} /> 
-        <Stack.Screen name="SignUp" component={SignUpScreen} />  {/* 👈 Fechada corretamente */}
+        <Stack.Screen name="SignUp" component={SignUpScreen} /> 
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="AddPet" component={AddPetScreen}/>
         <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

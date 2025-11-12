@@ -6,6 +6,7 @@ import HomeScreen from '../screens/HomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import AddPetScreen from '../screens/AddPetScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -34,16 +35,17 @@ export default function AppNavigator() {
         component={AddPetScreen} 
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name="ChoosePet" 
-        component={ChoosePetScreen}
-        options={{ headerShown: false }}
-      />
       <Stack.Screen
         name="Profile" 
         component={ProfileScreen} 
         options={{ headerShown: false }}
+
+      /><Stack.Screen
+        name="EditProfile" 
+        component={EditProfileScreen} 
+        options={{ headerShown: false }}
       />
+
     </Stack.Navigator>
   );
 }
