@@ -31,7 +31,7 @@ export default function PawgressSplashScreen() {
 
     // Navega para Home após 2.5 segundos
     const timer = setTimeout(() => {
-      navigation.replace('Login');
+      navigation.replace('SignUp');
     }, 2500);
 
     return () => clearTimeout(timer);
