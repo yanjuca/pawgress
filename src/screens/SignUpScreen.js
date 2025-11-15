@@ -145,7 +145,7 @@ export default function PawgressSignUpScreen() {
               <TouchableOpacity 
                 style={styles.createAccountBtn}
                 activeOpacity={0.7}
-                onPress={() => navigation.navigate('Home')}
+                onPress={() => navigation.navigate('Login')}
               >
                 <Text style={styles.createAccountText}>
                   já tem conta? <Text style={styles.createAccountBold}>entrar</Text>
