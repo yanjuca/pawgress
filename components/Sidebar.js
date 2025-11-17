@@ -18,6 +18,7 @@ export default function Sidebar({ isVisible, onClose }) {
     { label: 'Home', screen: 'Home' },
     { label: 'Add Pet', screen: 'AddPet' },
     { label: 'Profile', screen: 'Profile' },
+    { label: 'Settings', screen: 'Settings' },
   ];
 
   const handleNavigation = (screen) => {
