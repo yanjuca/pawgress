@@ -7,17 +7,15 @@ import {
   StyleSheet,
   ScrollView,
   Animated,
-  Dimensions,
+  StatusBar,
 } from 'react-native';
-import { Eye, ChevronLeft, ChevronRight, Heart, Calendar, Activity } from 'lucide-react-native';
-import Header from '../../components/Header';
-import Sidebar from '../../components/Sidebar';
-
-const { width } = Dimensions.get('window');
+import { Eye, ChevronLeft, ChevronRight, Heart, Calendar, Activity, User, Plus } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const [currentPet, setCurrentPet] = useState(0);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(1));
 
   const pets = [
@@ -54,6 +52,8 @@ export default function HomeScreen() {
         { item: 'Annual Checkup', date: 'Due 12/15/2025', priority: 'low' },
       ],
     },
+    // Card "Adicionar Pet" como última aba
+    { isAddPet: true },
   ];
 
   const pet = pets[currentPet];
@@ -96,152 +96,279 @@ export default function HomeScreen() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <Header title="pawgress" onMenuPress={() => setIsSidebarVisible(true)} />
+  // Renderiza card de "Adicionar Pet"
+  if (pet.isAddPet) {
+    return (
+      <View style={{ flex: 1 }}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+        
+        {/* Fundo */}
+        <Image 
+          source={require('../../assets/background.png')}
+          style={styles.backgroundImage}
+          resizeMode="cover"
+        />
 
-      <Sidebar
-        isVisible={isSidebarVisible}
-        onClose={() => setIsSidebarVisible(false)}
-      />
-
-      <View style={styles.card}>
-        {/* Header do Card com Navegação */}
-        <View style={styles.cardHeader}>
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => handlePetChange('prev')}
-            disabled={pets.length === 1}
-          >
-            <ChevronLeft color="white" size={24} />
-          </TouchableOpacity>
-
-          <View style={styles.petInfo}>
-            <Text style={styles.petName}>{pet.name}</Text>
-            <View style={styles.petIndicators}>
-              {pets.map((_, idx) => (
-                <View
-                  key={idx}
-                  style={[
-                    styles.indicator,
-                    idx === currentPet && styles.activeIndicator,
-                  ]}
-                />
-              ))}
-            </View>
+        <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+          {/* Header Customizado */}
+          <View style={styles.header}>
+            <Image 
+              source={require('../../assets/pawgresslogo.png')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            
+            <TouchableOpacity 
+              style={styles.profileButton}
+              onPress={() => navigation.navigate('Profile')}
+            >
+              <User color="#fff" size={24} />
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.navButton}
-            onPress={() => handlePetChange('next')}
-            disabled={pets.length === 1}
+          <View style={styles.card}>
+            {/* Header do Card com Navegação */}
+            <View style={styles.cardHeader}>
+              <TouchableOpacity
+                style={styles.navButton}
+                onPress={() => handlePetChange('prev')}
+              >
+                <ChevronLeft color="white" size={24} />
+              </TouchableOpacity>
+
+              <View style={styles.petInfo}>
+                <Text style={styles.petName}>Add New Pet</Text>
+                <View style={styles.petIndicators}>
+                  {pets.map((_, idx) => (
+                    <View
+                      key={idx}
+                      style={[
+                        styles.indicator,
+                        idx === currentPet && styles.activeIndicator,
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.navButton}
+                onPress={() => handlePetChange('next')}
+              >
+                <ChevronRight color="white" size={24} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Conteúdo do Card "Adicionar Pet" */}
+            <View style={styles.addPetContent}>
+              <View style={styles.addPetIcon}>
+                <Plus color="#c8e99a" size={80} strokeWidth={2} />
+              </View>
+              
+              <Text style={styles.addPetTitle}>Add a New Pet</Text>
+              <Text style={styles.addPetSubtitle}>
+                Start tracking your pet's health journey
+              </Text>
+
+              <TouchableOpacity 
+                style={styles.addPetButton}
+                onPress={() => navigation.navigate('AddPet')}
+              >
+                <Text style={styles.addPetButtonText}>Add Pet</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
+  // Renderiza card normal do pet
+  return (
+    <View style={{ flex: 1 }}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      
+      {/* Fundo */}
+      <Image 
+        source={require('../../assets/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        {/* Header Customizado */}
+        <View style={styles.header}>
+          <Image 
+            source={require('../../assets/pawgresslogo.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Profile')}
           >
-            <ChevronRight color="white" size={24} />
+            <User color="#fff" size={24} />
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <Animated.View style={{ opacity: fadeAnim }}>
-            {/* Imagem do Pet */}
-            <View style={styles.imageContainer}>
-              <Image source={{ uri: pet.image }} style={styles.image} />
-              <View style={styles.imageOverlay}>
-                <View style={styles.badge}>
-                  <Heart color="#ff6b6b" size={16} fill="#ff6b6b" />
-                  <Text style={styles.badgeText}>#{pet.number}</Text>
-                </View>
-              </View>
-            </View>
+        <View style={styles.card}>
+          {/* Header do Card com Navegação */}
+          <View style={styles.cardHeader}>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => handlePetChange('prev')}
+            >
+              <ChevronLeft color="white" size={24} />
+            </TouchableOpacity>
 
-            {/* Health Score */}
-            <View style={styles.healthScoreContainer}>
-              <View style={styles.healthScoreContent}>
-                <Activity color={getHealthColor(pet.healthScore)} size={20} />
-                <Text style={styles.healthScoreText}>{pet.healthStatus}</Text>
-              </View>
-              <View style={styles.scoreBar}>
-                <View
-                  style={[
-                    styles.scoreBarFill,
-                    {
-                      width: `${pet.healthScore}%`,
-                      backgroundColor: getHealthColor(pet.healthScore),
-                    },
-                  ]}
-                />
-              </View>
-              <Text style={styles.scorePercentage}>{pet.healthScore}% Health Score</Text>
-            </View>
-
-            {/* Quick Stats */}
-            <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
-                <Text style={styles.statLabel}>Weight</Text>
-                <Text style={styles.statValue}>{pet.weight}</Text>
-                <Text style={styles.statSubtext}>{pet.weightStatus}</Text>
-              </View>
-
-              <View style={styles.statCard}>
-                <Text style={styles.statLabel}>Energy</Text>
-                <Text style={styles.statValue}>{pet.energy}</Text>
-                <Text style={styles.statSubtext}>{pet.energyDetail}</Text>
-              </View>
-            </View>
-
-            {/* Last Checkup */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Calendar color="#fff" size={18} />
-                <Text style={styles.sectionTitle}>Last Check-up</Text>
-              </View>
-              <Text style={styles.checkupText}>{pet.lastCheckup}</Text>
-            </View>
-
-            {/* Upcoming */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Calendar color="#fff" size={18} />
-                <Text style={styles.sectionTitle}>Upcoming</Text>
-              </View>
-              {pet.upcoming.map((item, idx) => (
-                <View key={idx} style={styles.upcomingCard}>
+            <View style={styles.petInfo}>
+              <Text style={styles.petName}>{pet.name}</Text>
+              <View style={styles.petIndicators}>
+                {pets.map((_, idx) => (
                   <View
+                    key={idx}
                     style={[
-                      styles.priorityDot,
-                      { backgroundColor: getPriorityColor(item.priority) },
+                      styles.indicator,
+                      idx === currentPet && styles.activeIndicator,
                     ]}
                   />
-                  <View style={styles.upcomingContent}>
-                    <Text style={styles.upcomingItem}>{item.item}</Text>
-                    <Text style={styles.upcomingDate}>{item.date}</Text>
-                  </View>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
 
-            {/* View Details Button */}
-            <TouchableOpacity style={styles.detailsButton}>
-              <Eye color="white" size={20} />
-              <Text style={styles.detailsButtonText}>View Full Health Report</Text>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => handlePetChange('next')}
+            >
+              <ChevronRight color="white" size={24} />
             </TouchableOpacity>
-          </Animated.View>
-        </ScrollView>
-      </View>
+          </View>
+
+          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <Animated.View style={{ opacity: fadeAnim }}>
+              {/* Imagem do Pet */}
+              <View style={styles.imageContainer}>
+                <Image source={{ uri: pet.image }} style={styles.image} />
+                <View style={styles.imageOverlay}>
+                  <View style={styles.badge}>
+                    <Heart color="#ff6b6b" size={16} fill="#ff6b6b" />
+                    <Text style={styles.badgeText}>#{pet.number}</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Health Score */}
+              <View style={styles.healthScoreContainer}>
+                <View style={styles.healthScoreContent}>
+                  <Activity color={getHealthColor(pet.healthScore)} size={20} />
+                  <Text style={styles.healthScoreText}>{pet.healthStatus}</Text>
+                </View>
+                <View style={styles.scoreBar}>
+                  <View
+                    style={[
+                      styles.scoreBarFill,
+                      {
+                        width: `${pet.healthScore}%`,
+                        backgroundColor: getHealthColor(pet.healthScore),
+                      },
+                    ]}
+                  />
+                </View>
+                <Text style={styles.scorePercentage}>{pet.healthScore}% Health Score</Text>
+              </View>
+
+              {/* Quick Stats */}
+              <View style={styles.statsGrid}>
+                <View style={styles.statCard}>
+                  <Text style={styles.statLabel}>Weight</Text>
+                  <Text style={styles.statValue}>{pet.weight}</Text>
+                  <Text style={styles.statSubtext}>{pet.weightStatus}</Text>
+                </View>
+
+                <View style={styles.statCard}>
+                  <Text style={styles.statLabel}>Energy</Text>
+                  <Text style={styles.statValue}>{pet.energy}</Text>
+                  <Text style={styles.statSubtext}>{pet.energyDetail}</Text>
+                </View>
+              </View>
+
+              {/* Last Checkup */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Calendar color="#fff" size={18} />
+                  <Text style={styles.sectionTitle}>Last Check-up</Text>
+                </View>
+                <Text style={styles.checkupText}>{pet.lastCheckup}</Text>
+              </View>
+
+              {/* Upcoming */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Calendar color="#fff" size={18} />
+                  <Text style={styles.sectionTitle}>Upcoming</Text>
+                </View>
+                {pet.upcoming.map((item, idx) => (
+                  <View key={idx} style={styles.upcomingCard}>
+                    <View
+                      style={[
+                        styles.priorityDot,
+                        { backgroundColor: getPriorityColor(item.priority) },
+                      ]}
+                    />
+                    <View style={styles.upcomingContent}>
+                      <Text style={styles.upcomingItem}>{item.item}</Text>
+                      <Text style={styles.upcomingDate}>{item.date}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+
+              {/* View Details Button */}
+              <TouchableOpacity style={styles.detailsButton}>
+                <Eye color="white" size={20} />
+                <Text style={styles.detailsButtonText}>View Full Health Report</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </ScrollView>
+        </View>
+      </SafeAreaView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#6b7069',
-    paddingHorizontal: 16,
+  safe: { flex: 1, backgroundColor: 'transparent' },
+  backgroundImage: { position: 'absolute', width: '100%', height: '100%' },
+  
+  // Header customizado
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 15,
   },
+  headerLogo: {
+    width: 120,
+    height: 50,
+  },
+  profileButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Card principal
   card: {
     flex: 1,
-    borderRadius: 16,
-    backgroundColor: 'rgba(90, 96, 88, 0.95)',
-    marginTop: 20,
+    borderRadius: 20,
+    backgroundColor: 'rgba(45, 58, 44, 0.85)',
+    marginHorizontal: 16,
     marginBottom: 16,
     overflow: 'hidden',
   },
@@ -280,9 +407,55 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   activeIndicator: {
-    backgroundColor: '#4ade80',
+    backgroundColor: '#c8e99a',
     width: 24,
   },
+  
+  // Card "Adicionar Pet"
+  addPetContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  addPetIcon: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(200, 233, 154, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: 'rgba(200, 233, 154, 0.3)',
+    borderStyle: 'dashed',
+  },
+  addPetTitle: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  addPetSubtitle: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  addPetButton: {
+    backgroundColor: '#c8e99a',
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+  addPetButtonText: {
+    color: '#2d3a2c',
+    fontWeight: '700',
+    fontSize: 16,
+    textTransform: 'uppercase',
+  },
+
+  // Conteúdo do pet
   scrollContent: {
     flex: 1,
   },
@@ -429,10 +602,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 16,
     padding: 16,
-    backgroundColor: 'rgba(74, 222, 128, 0.2)',
+    backgroundColor: 'rgba(200, 233, 154, 0.15)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#4ade80',
+    borderColor: '#c8e99a',
   },
   detailsButtonText: {
     color: 'white',
