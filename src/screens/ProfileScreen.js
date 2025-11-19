@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ArrowLeft, User as UserIcon, MessageCircle, LogOut } from 'lucide-react-native';
 
 export default function ProfileScreen({ navigation }) {
   const handleEditProfile = () => {
-    // Navega para a tela de editar perfil
     console.log('Editar Perfil');
     navigation.navigate('EditProfile');
   };
@@ -39,6 +39,24 @@ export default function ProfileScreen({ navigation }) {
       />
 
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        {/* Header com logo e botão de voltar */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <ArrowLeft color="#fff" size={24} />
+          </TouchableOpacity>
+          
+          <Image 
+            source={require('../../assets/pawgresslogo.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          
+          <View style={{ width: 40 }} />
+        </View>
+
         <View style={styles.container}>
           {/* Título */}
           <View style={styles.headerContainer}>
@@ -48,15 +66,17 @@ export default function ProfileScreen({ navigation }) {
           {/* Card com as opções */}
           <BlurView intensity={100} tint="dark" style={styles.cardBlur}>
             <View style={styles.cardInner}>
-              
               {/* Opção 1: Editar Perfil */}
               <TouchableOpacity 
                 style={styles.optionWrapper} 
                 activeOpacity={0.85}
                 onPress={handleEditProfile}
               >
-                <View style={styles.optionBtnSecondary}>
-                  <Text style={styles.optionTextSecondary}>editar perfil</Text>
+                <View style={styles.optionBtn}>
+                  <View style={styles.optionIconWrapper}>
+                    <UserIcon color="#c8e99a" size={20} />
+                  </View>
+                  <Text style={styles.optionText}>editar perfil</Text>
                 </View>
               </TouchableOpacity>
 
@@ -66,8 +86,11 @@ export default function ProfileScreen({ navigation }) {
                 activeOpacity={0.85}
                 onPress={handleHelp}
               >
-                <View style={styles.optionBtnSecondary}>
-                  <Text style={styles.optionTextSecondary}>ajuda e feedback</Text>
+                <View style={styles.optionBtn}>
+                  <View style={styles.optionIconWrapper}>
+                    <MessageCircle color="#c8e99a" size={20} />
+                  </View>
+                  <Text style={styles.optionText}>ajuda e feedback</Text>
                 </View>
               </TouchableOpacity>
 
@@ -78,10 +101,12 @@ export default function ProfileScreen({ navigation }) {
                 onPress={handleLogout}
               >
                 <View style={styles.logoutBtn}>
-                  <Text style={styles.optionTextSecondary}>logout</Text>
+                  <View style={styles.optionIconWrapper}>
+                    <LogOut color="#fff" size={20} />
+                  </View>
+                  <Text style={styles.logoutText}>logout</Text>
                 </View>
               </TouchableOpacity>
-
             </View>
           </BlurView>
         </View>
@@ -100,6 +125,30 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  
+  // Header
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 15,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerLogo: {
+    width: 120,
+    height: 50,
+  },
+
+  // Container
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -119,6 +168,8 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
+
+  // Card
   cardBlur: {
     width: '100%',
     maxWidth: 400,
@@ -129,28 +180,54 @@ const styles = StyleSheet.create({
   cardInner: {
     padding: 20,
   },
+
+  // Opções
   optionWrapper: {
     marginBottom: 12,
   },
-  optionBtnSecondary: {
+  optionWrapperLast: {
+    marginBottom: 0,
+  },
+  optionBtn: {
     paddingVertical: 14,
+    paddingHorizontal: 16,
     borderRadius: 12,
     alignItems: 'center',
+    flexDirection: 'row',
     backgroundColor: 'rgba(255,255,255,0.1)',
+    gap: 12,
   },
-  logoutBtn: {
-    paddingVertical: 14,
-    borderRadius: 12,
+  optionIconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(200, 233, 154, 0.15)',
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#69140E',
   },
-  optionTextSecondary: {
+  optionText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: 16,
     textTransform: 'lowercase',
+    flex: 1,
   },
-  optionWrapperLast: {
-    marginBottom: 0,
+
+  // Logout button
+  logoutBtn: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    flexDirection: 'row',
+    backgroundColor: '#9d4037',
+    gap: 12,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
+    textTransform: 'lowercase',
+    flex: 1,
   },
 });
