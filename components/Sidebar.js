@@ -17,9 +17,7 @@ export default function Sidebar({ isVisible, onClose }) {
   const menuItems = [
     { label: 'Home', screen: 'Home' },
     { label: 'Add Pet', screen: 'AddPet' },
-    { label: 'Choose Pet', screen: 'ChoosePet' },
     { label: 'Profile', screen: 'Profile' },
-    { label: 'Settings', screen: 'Settings' },
   ];
 
   const handleNavigation = (screen) => {

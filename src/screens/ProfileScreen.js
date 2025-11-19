@@ -1,46 +1,156 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  StatusBar,
+  Image,
+} from 'react-native';
+import { BlurView } from 'expo-blur';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen({ navigation }) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.icon}>👤</Text>
-      <Text style={styles.title}>User Profile</Text>
+  const handleEditProfile = () => {
+    // Navega para a tela de editar perfil
+    console.log('Editar Perfil');
+    navigation.navigate('EditProfile');
+  };
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Login')}
-      >
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
+  const handleHelp = () => {
+    console.log('Ajuda e Feedback');
+    // navigation.navigate('Help'); // Descomente se implementar a tela de ajuda
+  };
+
+  const handleLogout = () => {
+    console.log('Logout');
+    navigation.navigate('Login');
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      
+      {/* Background Image */}
+      <Image 
+        source={require('../../assets/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <View style={styles.container}>
+          {/* Título */}
+          <View style={styles.headerContainer}>
+            <Text style={styles.headerTitle}>perfil</Text>
+          </View>
+
+          {/* Card com as opções */}
+          <BlurView intensity={100} tint="dark" style={styles.cardBlur}>
+            <View style={styles.cardInner}>
+              
+              {/* Opção 1: Editar Perfil */}
+              <TouchableOpacity 
+                style={styles.optionWrapper} 
+                activeOpacity={0.85}
+                onPress={handleEditProfile}
+              >
+                <View style={styles.optionBtnSecondary}>
+                  <Text style={styles.optionTextSecondary}>editar perfil</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Opção 2: Ajuda e Feedback */}
+              <TouchableOpacity 
+                style={styles.optionWrapper} 
+                activeOpacity={0.85}
+                onPress={handleHelp}
+              >
+                <View style={styles.optionBtnSecondary}>
+                  <Text style={styles.optionTextSecondary}>ajuda e feedback</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Opção 3: Logout */}
+              <TouchableOpacity 
+                style={styles.optionWrapperLast} 
+                activeOpacity={0.85}
+                onPress={handleLogout}
+              >
+                <View style={styles.logoutBtn}>
+                  <Text style={styles.optionTextSecondary}>logout</Text>
+                </View>
+              </TouchableOpacity>
+
+            </View>
+          </BlurView>
+        </View>
+      </SafeAreaView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#c5b7a1',
+    paddingHorizontal: 20,
   },
-  icon: {
-    fontSize: 80,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+  headerContainer: {
     marginBottom: 30,
+    alignItems: 'center',
   },
-  button: {
-    backgroundColor: '#7a6047',
-    paddingVertical: 10,
-    paddingHorizontal: 40,
-    borderRadius: 10,
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#fff',
+    textTransform: 'lowercase',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
-  buttonText: {
+  cardBlur: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  cardInner: {
+    padding: 20,
+  },
+  optionWrapper: {
+    marginBottom: 12,
+  },
+  optionBtnSecondary: {
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  logoutBtn: {
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#69140E',
+  },
+  optionTextSecondary: {
     color: '#fff',
     fontWeight: '600',
+    fontSize: 16,
+    textTransform: 'lowercase',
+  },
+  optionWrapperLast: {
+    marginBottom: 0,
   },
 });
