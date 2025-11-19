@@ -120,7 +120,7 @@ export default function HomeScreen() {
             
             <TouchableOpacity 
               style={styles.profileButton}
-              onPress={() => navigation.navigate('Profile')}
+              onPress={() => navigation.navigate('EditProfile')}
             >
               <User color="#fff" size={24} />
             </TouchableOpacity>
@@ -206,7 +206,7 @@ export default function HomeScreen() {
           
           <TouchableOpacity 
             style={styles.profileButton}
-            onPress={() => navigation.navigate('Profile')}
+            onPress={() => navigation.navigate('EditProfile')}
           >
             <User color="#fff" size={24} />
           </TouchableOpacity>

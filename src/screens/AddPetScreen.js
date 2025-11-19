@@ -10,8 +10,11 @@ import {
   Platform,
   Alert,
   Image,
-  ActionSheet,
+  StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import * as ImagePicker from 'expo-image-picker';
 import {
   PawPrint,
@@ -22,7 +25,6 @@ import {
   Camera,
   ArrowLeft,
   Check,
-  Image as ImageIcon,
   X,
 } from 'lucide-react-native';
 
@@ -45,8 +47,8 @@ export default function AddPetScreen({ navigation }) {
   // Request permissions on mount
   React.useEffect(() => {
     (async () => {
-      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-      const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      await ImagePicker.requestCameraPermissionsAsync();
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     })();
   }, []);
 
@@ -71,18 +73,8 @@ export default function AddPetScreen({ navigation }) {
 
   const handleSave = () => {
     if (validateForm()) {
-      Alert.alert(
-        'Success',
-        `${petData.name} has been added successfully!`,
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('Home'),
-          },
-        ]
-      );
-    } else {
-      Alert.alert('Error', 'Please fill in all required fields');
+      // Volta direto para home sem alert
+      navigation.navigate('Home');
     }
   };
 
@@ -128,7 +120,7 @@ export default function AddPetScreen({ navigation }) {
         setPetImage(result.assets[0].uri);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to take photo');
+      console.error('Failed to take photo');
     }
   };
 
@@ -145,7 +137,7 @@ export default function AddPetScreen({ navigation }) {
         setPetImage(result.assets[0].uri);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to pick image');
+      console.error('Failed to pick image');
     }
   };
 
@@ -154,318 +146,383 @@ export default function AddPetScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
+    <View style={{ flex: 1 }}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      
+      {/* Fundo */}
+      <Image 
+        source={require('../../assets/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <ArrowLeft color="white" size={24} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add New Pet</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Photo Upload */}
-        <TouchableOpacity 
-          style={styles.photoUpload}
-          onPress={handleImagePicker}
-          activeOpacity={0.7}
-        >
-          {petImage ? (
-            <View style={styles.photoPreviewContainer}>
-              <Image source={{ uri: petImage }} style={styles.photoPreview} />
-              <TouchableOpacity
-                style={styles.removePhotoButton}
-                onPress={removeImage}
-              >
-                <X color="white" size={20} />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <Camera color="#888" size={32} />
-              <Text style={styles.photoUploadText}>Add Photo</Text>
-              <Text style={styles.photoUploadSubtext}>Tap to upload or take a photo</Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        {/* Basic Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Basic Information</Text>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <PawPrint color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Pet Name *</Text>
-              <TextInput
-                style={[styles.input, errors.name && styles.inputError]}
-                placeholder="e.g., Max, Luna, Pibble"
-                placeholderTextColor="#999"
-                value={petData.name}
-                onChangeText={(value) => updateField('name', value)}
-              />
-              {errors.name && (
-                <Text style={styles.errorText}>{errors.name}</Text>
-              )}
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <PawPrint color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Species *</Text>
-              <TextInput
-                style={[styles.input, errors.species && styles.inputError]}
-                placeholder="e.g., Dog, Cat, Rabbit"
-                placeholderTextColor="#999"
-                value={petData.species}
-                onChangeText={(value) => updateField('species', value)}
-              />
-              {errors.species && (
-                <Text style={styles.errorText}>{errors.species}</Text>
-              )}
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <PawPrint color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Breed</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., Labrador, Persian"
-                placeholderTextColor="#999"
-                value={petData.breed}
-                onChangeText={(value) => updateField('breed', value)}
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Gender Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Gender *</Text>
-          <View style={styles.genderContainer}>
+          {/* Header */}
+          <View style={styles.header}>
             <TouchableOpacity
-              style={[
-                styles.genderButton,
-                selectedGender === 'male' && styles.genderButtonActive,
-              ]}
-              onPress={() => {
-                setSelectedGender('male');
-                setErrors({ ...errors, gender: '' });
-              }}
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
             >
-              <Text
-                style={[
-                  styles.genderButtonText,
-                  selectedGender === 'male' && styles.genderButtonTextActive,
-                ]}
-              >
-                Male
-              </Text>
+              <ArrowLeft color="#fff" size={24} />
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                selectedGender === 'female' && styles.genderButtonActive,
-              ]}
-              onPress={() => {
-                setSelectedGender('female');
-                setErrors({ ...errors, gender: '' });
-              }}
-            >
-              <Text
-                style={[
-                  styles.genderButtonText,
-                  selectedGender === 'female' && styles.genderButtonTextActive,
-                ]}
-              >
-                Female
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                selectedGender === 'other' && styles.genderButtonActive,
-              ]}
-              onPress={() => {
-                setSelectedGender('other');
-                setErrors({ ...errors, gender: '' });
-              }}
-            >
-              <Text
-                style={[
-                  styles.genderButtonText,
-                  selectedGender === 'other' && styles.genderButtonTextActive,
-                ]}
-              >
-                Other
-              </Text>
-            </TouchableOpacity>
-          </View>
-          {errors.gender && (
-            <Text style={styles.errorText}>{errors.gender}</Text>
-          )}
-        </View>
-
-        {/* Additional Details */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Additional Details</Text>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <Calendar color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Birth Date</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="MM/DD/YYYY"
-                placeholderTextColor="#999"
-                value={petData.birthDate}
-                onChangeText={(value) => updateField('birthDate', value)}
-              />
-            </View>
+            
+            <Image 
+              source={require('../../assets/pawgresslogo.png')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            
+            <View style={{ width: 40 }} />
           </View>
 
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <Weight color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Weight (kg)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., 4.5"
-                placeholderTextColor="#999"
-                keyboardType="decimal-pad"
-                value={petData.weight}
-                onChangeText={(value) => updateField('weight', value)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <User color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Microchip ID</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter microchip number"
-                placeholderTextColor="#999"
-                value={petData.microchip}
-                onChangeText={(value) => updateField('microchip', value)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <MapPin color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Location</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="City, Country"
-                placeholderTextColor="#999"
-                value={petData.location}
-                onChangeText={(value) => updateField('location', value)}
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => navigation.goBack()}
+          <ScrollView
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
+            {/* Card Principal */}
+            <BlurView intensity={100} tint="dark" style={styles.card}>
+              <View style={styles.cardInner}>
+                <Text style={styles.cardTitle}>add new pet</Text>
 
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Check color="white" size={20} />
-            <Text style={styles.saveButtonText}>Save Pet</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+                {/* Photo Upload */}
+                <TouchableOpacity 
+                  style={styles.photoUpload}
+                  onPress={handleImagePicker}
+                  activeOpacity={0.7}
+                >
+                  {petImage ? (
+                    <View style={styles.photoPreviewContainer}>
+                      <Image source={{ uri: petImage }} style={styles.photoPreview} />
+                      <TouchableOpacity
+                        style={styles.removePhotoButton}
+                        onPress={removeImage}
+                      >
+                        <X color="white" size={20} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <>
+                      <Camera color="rgba(255,255,255,0.5)" size={40} />
+                      <Text style={styles.photoUploadText}>add photo</Text>
+                      <Text style={styles.photoUploadSubtext}>tap to upload or take a photo</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+
+                {/* Basic Information */}
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>basic information</Text>
+
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputIcon}>
+                      <PawPrint color="#c8e99a" size={18} />
+                    </View>
+                    <View style={styles.inputWrapper}>
+                      <Text style={styles.inputLabel}>pet name *</Text>
+                      <TextInput
+                        style={[styles.input, errors.name && styles.inputError]}
+                        placeholder="e.g., max, luna, pibble"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={petData.name}
+                        onChangeText={(value) => updateField('name', value)}
+                      />
+                      {errors.name && (
+                        <Text style={styles.errorText}>{errors.name}</Text>
+                      )}
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputIcon}>
+                      <PawPrint color="#c8e99a" size={18} />
+                    </View>
+                    <View style={styles.inputWrapper}>
+                      <Text style={styles.inputLabel}>species *</Text>
+                      <TextInput
+                        style={[styles.input, errors.species && styles.inputError]}
+                        placeholder="e.g., dog, cat, rabbit"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={petData.species}
+                        onChangeText={(value) => updateField('species', value)}
+                      />
+                      {errors.species && (
+                        <Text style={styles.errorText}>{errors.species}</Text>
+                      )}
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputIcon}>
+                      <PawPrint color="#c8e99a" size={18} />
+                    </View>
+                    <View style={styles.inputWrapper}>
+                      <Text style={styles.inputLabel}>breed</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="e.g., labrador, persian"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={petData.breed}
+                        onChangeText={(value) => updateField('breed', value)}
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                {/* Gender Selection */}
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>gender *</Text>
+                  <View style={styles.genderContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.genderButton,
+                        selectedGender === 'male' && styles.genderButtonActive,
+                      ]}
+                      onPress={() => {
+                        setSelectedGender('male');
+                        setErrors({ ...errors, gender: '' });
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.genderButtonText,
+                          selectedGender === 'male' && styles.genderButtonTextActive,
+                        ]}
+                      >
+                        male
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.genderButton,
+                        selectedGender === 'female' && styles.genderButtonActive,
+                      ]}
+                      onPress={() => {
+                        setSelectedGender('female');
+                        setErrors({ ...errors, gender: '' });
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.genderButtonText,
+                          selectedGender === 'female' && styles.genderButtonTextActive,
+                        ]}
+                      >
+                        female
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.genderButton,
+                        selectedGender === 'other' && styles.genderButtonActive,
+                      ]}
+                      onPress={() => {
+                        setSelectedGender('other');
+                        setErrors({ ...errors, gender: '' });
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.genderButtonText,
+                          selectedGender === 'other' && styles.genderButtonTextActive,
+                        ]}
+                      >
+                        other
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  {errors.gender && (
+                    <Text style={styles.errorText}>{errors.gender}</Text>
+                  )}
+                </View>
+
+                {/* Additional Details */}
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>additional details</Text>
+
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputIcon}>
+                      <Calendar color="#c8e99a" size={18} />
+                    </View>
+                    <View style={styles.inputWrapper}>
+                      <Text style={styles.inputLabel}>birth date</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="mm/dd/yyyy"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={petData.birthDate}
+                        onChangeText={(value) => updateField('birthDate', value)}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputIcon}>
+                      <Weight color="#c8e99a" size={18} />
+                    </View>
+                    <View style={styles.inputWrapper}>
+                      <Text style={styles.inputLabel}>weight (kg)</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="e.g., 4.5"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        keyboardType="decimal-pad"
+                        value={petData.weight}
+                        onChangeText={(value) => updateField('weight', value)}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputIcon}>
+                      <User color="#c8e99a" size={18} />
+                    </View>
+                    <View style={styles.inputWrapper}>
+                      <Text style={styles.inputLabel}>microchip id</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="enter microchip number"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={petData.microchip}
+                        onChangeText={(value) => updateField('microchip', value)}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputIcon}>
+                      <MapPin color="#c8e99a" size={18} />
+                    </View>
+                    <View style={styles.inputWrapper}>
+                      <Text style={styles.inputLabel}>location</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="city, country"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        value={petData.location}
+                        onChangeText={(value) => updateField('location', value)}
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                {/* Action Buttons */}
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => navigation.goBack()}
+                  >
+                    <Text style={styles.cancelButtonText}>cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={styles.saveWrapper}
+                    onPress={handleSave}
+                    activeOpacity={0.85}
+                  >
+                    <LinearGradient
+                      colors={['#c8e99a', '#9fdc7c']}
+                      start={[0, 0]}
+                      end={[1, 1]}
+                      style={styles.saveButton}
+                    >
+                      <Check color="#2d3a2c" size={20} />
+                      <Text style={styles.saveButtonText}>save pet</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </BlurView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#c5b7a1',
-  },
+  safe: { flex: 1, backgroundColor: 'transparent' },
+  backgroundImage: { position: 'absolute', width: '100%', height: '100%' },
+  container: { flex: 1 },
+  
+  // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: Platform.OS === 'ios' ? 60 : 16,
-    backgroundColor: '#7a6047',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 15,
   },
   backButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  headerTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+  headerLogo: {
+    width: 120,
+    height: 50,
   },
+
+  // Scroll
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    paddingHorizontal: 16,
     paddingBottom: 32,
   },
+
+  // Card
+  card: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  cardInner: {
+    padding: 20,
+  },
+  cardTitle: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textTransform: 'lowercase',
+    textAlign: 'center',
+  },
+
+  // Photo Upload
   photoUpload: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 16,
-    padding: 40,
+    padding: 32,
     alignItems: 'center',
     marginBottom: 24,
     borderWidth: 2,
-    borderColor: '#e0e0e0',
+    borderColor: 'rgba(200, 233, 154, 0.3)',
     borderStyle: 'dashed',
   },
   photoUploadText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
     marginTop: 12,
+    textTransform: 'lowercase',
   },
   photoUploadSubtext: {
     fontSize: 12,
-    color: '#888',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginTop: 4,
+    textTransform: 'lowercase',
   },
   photoPreviewContainer: {
     width: '100%',
@@ -484,19 +541,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 8,
   },
+
+  // Sections
   section: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
+    color: '#c8e99a',
+    marginBottom: 12,
+    textTransform: 'lowercase',
   },
+
+  // Input Groups
   inputGroup: {
     flexDirection: 'row',
-    marginBottom: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: 12,
   },
@@ -508,14 +570,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputLabel: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 4,
     fontWeight: '600',
+    textTransform: 'lowercase',
   },
   input: {
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
     padding: 0,
   },
   inputError: {
@@ -526,32 +589,38 @@ const styles = StyleSheet.create({
     color: '#f87171',
     fontSize: 11,
     marginTop: 4,
+    textTransform: 'lowercase',
   },
+
+  // Gender Selection
   genderContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
   },
   genderButton: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingVertical: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
   },
   genderButtonActive: {
-    backgroundColor: '#7a6047',
-    borderColor: '#5a4837',
+    backgroundColor: 'rgba(200, 233, 154, 0.2)',
+    borderColor: '#c8e99a',
   },
   genderButtonText: {
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '600',
     fontSize: 14,
+    textTransform: 'lowercase',
   },
   genderButtonTextActive: {
-    color: 'white',
+    color: '#c8e99a',
   },
+
+  // Buttons
   buttonContainer: {
     flexDirection: 'row',
     gap: 12,
@@ -559,22 +628,24 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingVertical: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#7a6047',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   cancelButtonText: {
-    color: '#7a6047',
+    color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 14,
+    textTransform: 'lowercase',
+  },
+  saveWrapper: {
+    flex: 1,
   },
   saveButton: {
-    flex: 1,
-    backgroundColor: '#7a6047',
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
     flexDirection: 'row',
@@ -582,8 +653,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   saveButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
+    color: '#2d3a2c',
+    fontWeight: '700',
+    fontSize: 14,
+    textTransform: 'uppercase',
   },
 });

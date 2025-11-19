@@ -18,7 +18,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundImage": "./assets/background.png"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.kalyellira56.pawgress"

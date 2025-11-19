@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { ChevronLeft, Edit, User, Mail } from 'lucide-react-native';
 
 export default function ProfileScreen({ navigation }) {
