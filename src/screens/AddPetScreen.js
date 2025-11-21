@@ -4,76 +4,121 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
+  ScrollView,
   Image,
-  ActionSheet,
+  StyleSheet,
+  Platform
 } from 'react-native';
+import { usePet } from '../../context/PetContext';
 import * as ImagePicker from 'expo-image-picker';
-import {
-  PawPrint,
-  Calendar,
-  Weight,
-  MapPin,
-  User,
-  Camera,
-  ArrowLeft,
-  Check,
-  Image as ImageIcon,
-  X,
-} from 'lucide-react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function AddPetScreen({ navigation }) {
+  const { addPet } = usePet();
+  
   const [petData, setPetData] = useState({
     name: '',
     species: '',
     breed: '',
-    birthDate: '',
+    birthDate: new Date(),
     weight: '',
-    gender: '',
     microchip: '',
-    location: '',
+    location: ''
   });
-
+  
   const [selectedGender, setSelectedGender] = useState('');
-  const [errors, setErrors] = useState({});
   const [petImage, setPetImage] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Request permissions on mount
-  React.useEffect(() => {
-    (async () => {
-      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-      const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    })();
-  }, []);
-
+  // Função para validar o formulário
   const validateForm = () => {
-    const newErrors = {};
-    
-    if (!petData.name.trim()) {
-      newErrors.name = 'Pet name is required';
-    }
-    
-    if (!petData.species.trim()) {
-      newErrors.species = 'Species is required';
-    }
-    
-    if (!selectedGender) {
-      newErrors.gender = 'Please select a gender';
-    }
+    return (
+      petData.name.trim() !== '' &&
+      petData.species.trim() !== '' &&
+      selectedGender !== '' &&
+      petData.weight.trim() !== ''
+    );
+  };
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  // Função para selecionar imagem da galeria
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria de fotos.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        setPetImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível selecionar a imagem.');
+    }
+  };
+
+  // Função para tirar foto com a câmera
+  const takePhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permissão necessária', 'Precisamos de acesso à sua câmera.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        setPetImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível tirar a foto.');
+    }
+  };
+
+  // Função para lidar com a data de nascimento
+  const onDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setPetData({ ...petData, birthDate: selectedDate });
+    }
   };
 
   const handleSave = () => {
     if (validateForm()) {
+      const newPet = {
+        id: Date.now().toString(),
+        name: petData.name,
+        species: petData.species,
+        breed: petData.breed,
+        birthDate: petData.birthDate.toISOString(),
+        weight: parseFloat(petData.weight) || 0,
+        gender: selectedGender,
+        microchip: petData.microchip,
+        location: petData.location,
+        image: petImage,
+        createdAt: new Date().toISOString(),
+      };
+
+      addPet(newPet);
+      
       Alert.alert(
-        'Success',
-        `${petData.name} has been added successfully!`,
+        'Sucesso',
+        `${petData.name} foi adicionado com sucesso!`,
         [
           {
             text: 'OK',
@@ -82,508 +127,297 @@ export default function AddPetScreen({ navigation }) {
         ]
       );
     } else {
-      Alert.alert('Error', 'Please fill in all required fields');
+      Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios');
     }
   };
 
-  const updateField = (field, value) => {
-    setPetData({ ...petData, [field]: value });
-    if (errors[field]) {
-      setErrors({ ...errors, [field]: '' });
-    }
-  };
-
-  const handleImagePicker = () => {
-    Alert.alert(
-      'Add Photo',
-      'Choose an option',
-      [
-        {
-          text: 'Take Photo',
-          onPress: () => takePhoto(),
-        },
-        {
-          text: 'Choose from Library',
-          onPress: () => pickImage(),
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-      ],
-      { cancelable: true }
-    );
-  };
-
-  const takePhoto = async () => {
-    try {
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled) {
-        setPetImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to take photo');
-    }
-  };
-
-  const pickImage = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      if (!result.canceled) {
-        setPetImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to pick image');
-    }
-  };
-
-  const removeImage = () => {
-    setPetImage(null);
+  const formatDate = (date) => {
+    return date.toLocaleDateString('pt-BR');
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <ArrowLeft color="white" size={24} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add New Pet</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Photo Upload */}
+    <ScrollView style={styles.container}>
+      {/* Seção da Imagem */}
+      <View style={styles.imageSection}>
         <TouchableOpacity 
-          style={styles.photoUpload}
-          onPress={handleImagePicker}
-          activeOpacity={0.7}
+          style={styles.imageContainer}
+          onPress={pickImage}
         >
           {petImage ? (
-            <View style={styles.photoPreviewContainer}>
-              <Image source={{ uri: petImage }} style={styles.photoPreview} />
-              <TouchableOpacity
-                style={styles.removePhotoButton}
-                onPress={removeImage}
-              >
-                <X color="white" size={20} />
-              </TouchableOpacity>
-            </View>
+            <Image source={{ uri: petImage }} style={styles.petImage} />
           ) : (
-            <>
-              <Camera color="#888" size={32} />
-              <Text style={styles.photoUploadText}>Add Photo</Text>
-              <Text style={styles.photoUploadSubtext}>Tap to upload or take a photo</Text>
-            </>
+            <View style={styles.placeholderImage}>
+              <Text style={styles.placeholderText}>Adicionar Foto</Text>
+            </View>
           )}
         </TouchableOpacity>
+        
+        <View style={styles.cameraButtons}>
+          <TouchableOpacity style={styles.cameraButton} onPress={pickImage}>
+            <Text style={styles.cameraButtonText}>Galeria</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.cameraButton} onPress={takePhoto}>
+            <Text style={styles.cameraButtonText}>Câmera</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
-        {/* Basic Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Basic Information</Text>
+      {/* Formulário */}
+      <View style={styles.form}>
+        {/* Nome */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Nome *</Text>
+          <TextInput
+            style={styles.input}
+            value={petData.name}
+            onChangeText={(text) => setPetData({ ...petData, name: text })}
+            placeholder="Digite o nome do pet"
+          />
+        </View>
 
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <PawPrint color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Pet Name *</Text>
-              <TextInput
-                style={[styles.input, errors.name && styles.inputError]}
-                placeholder="e.g., Max, Luna, Pibble"
-                placeholderTextColor="#999"
-                value={petData.name}
-                onChangeText={(value) => updateField('name', value)}
-              />
-              {errors.name && (
-                <Text style={styles.errorText}>{errors.name}</Text>
-              )}
-            </View>
-          </View>
+        {/* Espécie */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Espécie *</Text>
+          <TextInput
+            style={styles.input}
+            value={petData.species}
+            onChangeText={(text) => setPetData({ ...petData, species: text })}
+            placeholder="Ex: Cachorro, Gato, etc."
+          />
+        </View>
 
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <PawPrint color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Species *</Text>
-              <TextInput
-                style={[styles.input, errors.species && styles.inputError]}
-                placeholder="e.g., Dog, Cat, Rabbit"
-                placeholderTextColor="#999"
-                value={petData.species}
-                onChangeText={(value) => updateField('species', value)}
-              />
-              {errors.species && (
-                <Text style={styles.errorText}>{errors.species}</Text>
-              )}
-            </View>
-          </View>
+        {/* Raça */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Raça</Text>
+          <TextInput
+            style={styles.input}
+            value={petData.breed}
+            onChangeText={(text) => setPetData({ ...petData, breed: text })}
+            placeholder="Digite a raça"
+          />
+        </View>
 
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <PawPrint color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Breed</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., Labrador, Persian"
-                placeholderTextColor="#999"
-                value={petData.breed}
-                onChangeText={(value) => updateField('breed', value)}
-              />
-            </View>
+        {/* Gênero */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Gênero *</Text>
+          <View style={styles.genderContainer}>
+            {['Macho', 'Fêmea'].map((gender) => (
+              <TouchableOpacity
+                key={gender}
+                style={[
+                  styles.genderButton,
+                  selectedGender === gender && styles.genderButtonSelected
+                ]}
+                onPress={() => setSelectedGender(gender)}
+              >
+                <Text
+                  style={[
+                    styles.genderText,
+                    selectedGender === gender && styles.genderTextSelected
+                  ]}
+                >
+                  {gender}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
-        {/* Gender Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Gender *</Text>
-          <View style={styles.genderContainer}>
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                selectedGender === 'male' && styles.genderButtonActive,
-              ]}
-              onPress={() => {
-                setSelectedGender('male');
-                setErrors({ ...errors, gender: '' });
-              }}
-            >
-              <Text
-                style={[
-                  styles.genderButtonText,
-                  selectedGender === 'male' && styles.genderButtonTextActive,
-                ]}
-              >
-                Male
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                selectedGender === 'female' && styles.genderButtonActive,
-              ]}
-              onPress={() => {
-                setSelectedGender('female');
-                setErrors({ ...errors, gender: '' });
-              }}
-            >
-              <Text
-                style={[
-                  styles.genderButtonText,
-                  selectedGender === 'female' && styles.genderButtonTextActive,
-                ]}
-              >
-                Female
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                selectedGender === 'other' && styles.genderButtonActive,
-              ]}
-              onPress={() => {
-                setSelectedGender('other');
-                setErrors({ ...errors, gender: '' });
-              }}
-            >
-              <Text
-                style={[
-                  styles.genderButtonText,
-                  selectedGender === 'other' && styles.genderButtonTextActive,
-                ]}
-              >
-                Other
-              </Text>
-            </TouchableOpacity>
-          </View>
-          {errors.gender && (
-            <Text style={styles.errorText}>{errors.gender}</Text>
+        {/* Data de Nascimento */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Data de Nascimento</Text>
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={styles.dateText}>
+              {formatDate(petData.birthDate)}
+            </Text>
+          </TouchableOpacity>
+          
+          {showDatePicker && (
+            <DateTimePicker
+              value={petData.birthDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onDateChange}
+              maximumDate={new Date()}
+            />
           )}
         </View>
 
-        {/* Additional Details */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Additional Details</Text>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <Calendar color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Birth Date</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="MM/DD/YYYY"
-                placeholderTextColor="#999"
-                value={petData.birthDate}
-                onChangeText={(value) => updateField('birthDate', value)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <Weight color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Weight (kg)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., 4.5"
-                placeholderTextColor="#999"
-                keyboardType="decimal-pad"
-                value={petData.weight}
-                onChangeText={(value) => updateField('weight', value)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <User color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Microchip ID</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter microchip number"
-                placeholderTextColor="#999"
-                value={petData.microchip}
-                onChangeText={(value) => updateField('microchip', value)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputIcon}>
-              <MapPin color="#7a6047" size={20} />
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Location</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="City, Country"
-                placeholderTextColor="#999"
-                value={petData.location}
-                onChangeText={(value) => updateField('location', value)}
-              />
-            </View>
-          </View>
+        {/* Peso */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Peso (kg) *</Text>
+          <TextInput
+            style={styles.input}
+            value={petData.weight}
+            onChangeText={(text) => setPetData({ ...petData, weight: text })}
+            placeholder="Ex: 5.2"
+            keyboardType="decimal-pad"
+          />
         </View>
 
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Check color="white" size={20} />
-            <Text style={styles.saveButtonText}>Save Pet</Text>
-          </TouchableOpacity>
+        {/* Microchip */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Número do Microchip</Text>
+          <TextInput
+            style={styles.input}
+            value={petData.microchip}
+            onChangeText={(text) => setPetData({ ...petData, microchip: text })}
+            placeholder="Número do microchip"
+          />
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        {/* Localização */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Localização</Text>
+          <TextInput
+            style={styles.input}
+            value={petData.location}
+            onChangeText={(text) => setPetData({ ...petData, location: text })}
+            placeholder="Cidade/Estado"
+          />
+        </View>
+
+        {/* Botão Salvar */}
+        <TouchableOpacity 
+          style={[
+            styles.saveButton,
+            !validateForm() && styles.saveButtonDisabled
+          ]}
+          onPress={handleSave}
+          disabled={!validateForm()}
+        >
+          <Text style={styles.saveButtonText}>Salvar Pet</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#c5b7a1',
+    backgroundColor: '#fff',
   },
-  header: {
+  imageSection: {
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  imageContainer: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: '#f8f8f8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+    overflow: 'hidden',
+  },
+  petImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 75,
+  },
+  placeholderImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 75,
+    backgroundColor: '#e1e1e1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  cameraButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: Platform.OS === 'ios' ? 60 : 16,
-    backgroundColor: '#7a6047',
+    gap: 10,
   },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  photoUpload: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 16,
-    padding: 40,
-    alignItems: 'center',
-    marginBottom: 24,
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-    borderStyle: 'dashed',
-  },
-  photoUploadText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 12,
-  },
-  photoUploadSubtext: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 4,
-  },
-  photoPreviewContainer: {
-    width: '100%',
-    position: 'relative',
-  },
-  photoPreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
-  },
-  removePhotoButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  cameraButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    backgroundColor: '#007AFF',
     borderRadius: 20,
-    padding: 8,
   },
-  section: {
-    marginBottom: 24,
+  cameraButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
+  form: {
+    padding: 20,
   },
   inputGroup: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 12,
-    padding: 12,
+    marginBottom: 20,
   },
-  inputIcon: {
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  inputWrapper: {
-    flex: 1,
-  },
-  inputLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
+  label: {
+    fontSize: 16,
     fontWeight: '600',
+    marginBottom: 8,
+    color: '#333',
   },
   input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
-    color: '#333',
-    padding: 0,
-  },
-  inputError: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#f87171',
-  },
-  errorText: {
-    color: '#f87171',
-    fontSize: 11,
-    marginTop: 4,
+    backgroundColor: '#f9f9f9',
   },
   genderContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   genderButton: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingVertical: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    backgroundColor: '#f9f9f9',
   },
-  genderButtonActive: {
-    backgroundColor: '#7a6047',
-    borderColor: '#5a4837',
+  genderButtonSelected: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
   },
-  genderButtonText: {
-    color: '#666',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  genderButtonTextActive: {
-    color: 'white',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#7a6047',
-  },
-  cancelButtonText: {
-    color: '#7a6047',
-    fontWeight: 'bold',
+  genderText: {
     fontSize: 16,
+    color: '#666',
+  },
+  genderTextSelected: {
+    color: '#fff',
+    fontWeight: '500',
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#f9f9f9',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#333',
   },
   saveButton: {
-    flex: 1,
-    backgroundColor: '#7a6047',
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 8,
     alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
+    marginTop: 20,
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#ccc',
   },
   saveButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

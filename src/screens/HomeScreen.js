@@ -9,52 +9,54 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-import { Eye, ChevronLeft, ChevronRight, Heart, Calendar, Activity } from 'lucide-react-native';
+import { Eye, ChevronLeft, ChevronRight, Heart, Calendar, Activity, Plus } from 'lucide-react-native';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
+import { usePet } from '../../context/PetContext'; // Ajuste o caminho
 
 const { width } = Dimensions.get('window');
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
+  const { pets } = usePet();
   const [currentPet, setCurrentPet] = useState(0);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(1));
 
-  const pets = [
-    {
-      name: 'Pibble',
-      number: 2,
-      image:
-        'https://heapet.com/cdn/shop/articles/what-is-a-pibble-dog-smile_7b0f5b3b-0901-48a5-8e7e-0f48f3417712.webp?v=1751761402',
-      healthStatus: 'Great Pawgress!',
-      healthScore: 95,
-      lastCheckup: 'Dr. Evans (Vetamin Clinic) on 10/20/2025',
-      weight: '4.5 kg',
-      weightStatus: 'On target for age',
-      energy: 'High',
-      energyDetail: 'Daily walks to play',
-      upcoming: [
-        { item: 'Vaccine Booster', date: 'Due 11/25/2025', priority: 'high' },
-        { item: 'Flea/Tick Prevention', date: 'Due 11/01/2025', priority: 'medium' },
-      ],
-    },
-    {
-      name: 'Luna',
-      number: 1,
-      image:
-        'https://heapet.com/cdn/shop/articles/what-is-a-pibble-dog-smile_7b0f5b3b-0901-48a5-8e7e-0f48f3417712.webp?v=1751761402',
-      healthStatus: 'Excellent!',
-      healthScore: 98,
-      lastCheckup: 'Dr. Smith (PetCare Center) on 10/15/2025',
-      weight: '6.2 kg',
-      weightStatus: 'Perfect weight',
-      energy: 'Very High',
-      energyDetail: 'Playful and active',
-      upcoming: [
-        { item: 'Annual Checkup', date: 'Due 12/15/2025', priority: 'low' },
-      ],
-    },
-  ];
+  // Verifica se há pets, se não, mostra estado vazio
+  if (pets.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Header 
+          title="pawgress" 
+          onMenuPress={() => setIsSidebarVisible(true)}
+          showAddButton={true}
+          onAddPress={() => navigation.navigate('AddPet')}
+        />
+        
+        <Sidebar
+          isVisible={isSidebarVisible}
+          onClose={() => setIsSidebarVisible(false)}
+        />
+
+        <View style={styles.emptyState}>
+          <View style={styles.emptyCard}>
+            <Heart color="#7a6047" size={64} />
+            <Text style={styles.emptyTitle}>No Pets Added Yet</Text>
+            <Text style={styles.emptyText}>
+              Start by adding your first pet to track their health and progress!
+            </Text>
+            <TouchableOpacity 
+              style={styles.addFirstPetButton}
+              onPress={() => navigation.navigate('AddPet')}
+            >
+              <Plus color="white" size={20} />
+              <Text style={styles.addFirstPetText}>Add Your First Pet</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   const pet = pets[currentPet];
 
@@ -98,7 +100,12 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="pawgress" onMenuPress={() => setIsSidebarVisible(true)} />
+      <Header 
+        title="pawgress" 
+        onMenuPress={() => setIsSidebarVisible(true)}
+        showAddButton={true}
+        onAddPress={() => navigation.navigate('AddPet')}
+      />
 
       <Sidebar
         isVisible={isSidebarVisible}
@@ -118,6 +125,9 @@ export default function HomeScreen() {
 
           <View style={styles.petInfo}>
             <Text style={styles.petName}>{pet.name}</Text>
+            <Text style={styles.petDetails}>
+              {pet.breed || pet.species} • {pet.gender || 'Not specified'}
+            </Text>
             <View style={styles.petIndicators}>
               {pets.map((_, idx) => (
                 <View
@@ -150,7 +160,38 @@ export default function HomeScreen() {
                   <Heart color="#ff6b6b" size={16} fill="#ff6b6b" />
                   <Text style={styles.badgeText}>#{pet.number}</Text>
                 </View>
+                {pet.location && (
+                  <View style={styles.locationBadge}>
+                    <Text style={styles.locationText}>{pet.location}</Text>
+                  </View>
+                )}
               </View>
+            </View>
+
+            {/* Informações Básicas */}
+            <View style={styles.basicInfoContainer}>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Species:</Text>
+                <Text style={styles.infoValue}>{pet.species || 'Not specified'}</Text>
+              </View>
+              {pet.breed && (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Breed:</Text>
+                  <Text style={styles.infoValue}>{pet.breed}</Text>
+                </View>
+              )}
+              {pet.birthDate && (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Birth Date:</Text>
+                  <Text style={styles.infoValue}>{pet.birthDate}</Text>
+                </View>
+              )}
+              {pet.microchip && (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Microchip:</Text>
+                  <Text style={styles.infoValue}>{pet.microchip}</Text>
+                </View>
+              )}
             </View>
 
             {/* Health Score */}
@@ -198,26 +239,28 @@ export default function HomeScreen() {
             </View>
 
             {/* Upcoming */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Calendar color="#fff" size={18} />
-                <Text style={styles.sectionTitle}>Upcoming</Text>
-              </View>
-              {pet.upcoming.map((item, idx) => (
-                <View key={idx} style={styles.upcomingCard}>
-                  <View
-                    style={[
-                      styles.priorityDot,
-                      { backgroundColor: getPriorityColor(item.priority) },
-                    ]}
-                  />
-                  <View style={styles.upcomingContent}>
-                    <Text style={styles.upcomingItem}>{item.item}</Text>
-                    <Text style={styles.upcomingDate}>{item.date}</Text>
-                  </View>
+            {pet.upcoming && pet.upcoming.length > 0 && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Calendar color="#fff" size={18} />
+                  <Text style={styles.sectionTitle}>Upcoming</Text>
                 </View>
-              ))}
-            </View>
+                {pet.upcoming.map((item, idx) => (
+                  <View key={idx} style={styles.upcomingCard}>
+                    <View
+                      style={[
+                        styles.priorityDot,
+                        { backgroundColor: getPriorityColor(item.priority) },
+                      ]}
+                    />
+                    <View style={styles.upcomingContent}>
+                      <Text style={styles.upcomingItem}>{item.item}</Text>
+                      <Text style={styles.upcomingDate}>{item.date}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
 
             {/* View Details Button */}
             <TouchableOpacity style={styles.detailsButton}>
@@ -267,6 +310,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 22,
     fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  petDetails: {
+    color: '#ccc',
+    fontSize: 14,
     marginBottom: 8,
   },
   petIndicators: {
@@ -299,6 +347,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 28,
     right: 28,
+    alignItems: 'flex-end',
   },
   badge: {
     flexDirection: 'row',
@@ -313,6 +362,41 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  locationBadge: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  locationText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  basicInfoContainer: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  infoLabel: {
+    color: '#aaa',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  infoValue: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
   healthScoreContainer: {
     marginHorizontal: 16,
@@ -435,6 +519,47 @@ const styles = StyleSheet.create({
     borderColor: '#4ade80',
   },
   detailsButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    padding: 40,
+    alignItems: 'center',
+    width: '100%',
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#7a6047',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  addFirstPetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#7a6047',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  addFirstPetText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
