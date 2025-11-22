@@ -10,7 +10,7 @@ import HomeScreen from "../src/screens/HomeScreen";
 import AddPetScreen from "../src/screens/AddPetScreen";
 import ProfileScreen from "../src/screens/ProfileScreen";
 import EditProfileScreen from "../src/screens/EditProfileScreen";
-import SettingsScreen from "../src/screens/SettingsScreens";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -19,14 +19,13 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={user ? "Home" : "Login"} screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Navigator initialRouteName={user ? "Home" : "SignUp"} screenOptions={{ headerShown: false }}>
         <Stack.Screen name="SignUp" component={SignUpScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="AddPet" component={AddPetScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-        <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

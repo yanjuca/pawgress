@@ -1,11 +1,14 @@
-import React, { useContext, useState } from 'react';
+
+import React, { useContext, useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
   TouchableOpacity, 
   StyleSheet, 
   ScrollView,
-  TextInput
+  TextInput,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 
 import { ChevronLeft, User, Mail, Save } from 'lucide-react-native';
@@ -13,21 +16,58 @@ import { LocalAuthContext } from '../engine/LocalAuthEngine';
 
 export default function EditProfileScreen({ navigation }) {
   
-  const { user, updateUser } = useContext(LocalAuthContext);
+  const { user, updateUser, isLoading } = useContext(LocalAuthContext);
 
   // Estados locais para edição
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    updateUser({
-      ...user,
-      name,
-      email,
-    });
+  // Atualiza os estados quando o usuário carrega
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
 
-    navigation.goBack();
+  const handleSave = async () => {
+    if (!name.trim() || !email.trim()) {
+      Alert.alert('Erro', 'Preencha todos os campos.');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      Alert.alert('Erro', 'Digite um email válido.');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await updateUser({
+        ...user,
+        name: name.trim(),
+        email: email.trim(),
+      });
+      
+      Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+      navigation.goBack();
+    } catch (error) {
+      console.log('Erro ao salvar:', error);
+      Alert.alert('Erro', 'Não foi possível salvar as alterações.');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#fff" />
+        <Text style={styles.loadingText}>Carregando...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -38,6 +78,7 @@ export default function EditProfileScreen({ navigation }) {
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.goBack()}
+            disabled={isSaving}
           >
             <ChevronLeft color="white" size={24} />
           </TouchableOpacity>
@@ -47,7 +88,7 @@ export default function EditProfileScreen({ navigation }) {
           <View style={{ width: 24 }} />
         </View>
 
-        <ScrollView style={styles.content}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
           {/* Avatar */}
           <View style={styles.avatarContainer}>
@@ -66,6 +107,7 @@ export default function EditProfileScreen({ navigation }) {
               onChangeText={setName}
               placeholder="Seu nome"
               placeholderTextColor="#aaa"
+              editable={!isSaving}
             />
           </View>
 
@@ -80,16 +122,25 @@ export default function EditProfileScreen({ navigation }) {
               placeholder="Seu email"
               keyboardType="email-address"
               placeholderTextColor="#aaa"
+              autoCapitalize="none"
+              editable={!isSaving}
             />
           </View>
 
           {/* Salvar */}
           <TouchableOpacity 
-            style={styles.saveButton}
+            style={[styles.saveButton, isSaving && styles.disabledButton]}
             onPress={handleSave}
+            disabled={isSaving}
           >
-            <Save color="white" size={20} />
-            <Text style={styles.saveButtonText}>Salvar Alterações</Text>
+            {isSaving ? (
+              <ActivityIndicator color="white" size="small" />
+            ) : (
+              <Save color="white" size={20} />
+            )}
+            <Text style={styles.saveButtonText}>
+              {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+            </Text>
           </TouchableOpacity>
 
         </ScrollView>
@@ -105,6 +156,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#6b7069',
     padding: 16,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 10,
+    fontSize: 16,
   },
   card: {
     width: '100%',
@@ -169,7 +229,6 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 15,
   },
-
   saveButton: {
     backgroundColor: 'rgba(70, 130, 70, 0.9)',
     borderRadius: 8,
@@ -184,5 +243,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
 });

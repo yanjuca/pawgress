@@ -1,108 +1,91 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Crypto from "expo-crypto";
-
-// 🔐 Chave para salvar o usuário local
-const STORAGE_KEY = "@localUser";
+// engine/LocalAuthEngine.js
+import React, { createContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const LocalAuthContext = createContext();
 
 export function LocalAuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // -------------------------
-  // 🔄 Carrega usuário salvo
-  // -------------------------
+  // Carrega o usuário do AsyncStorage ao inicializar
   useEffect(() => {
-    loadUser();
+    loadUserFromStorage();
   }, []);
 
-  async function loadUser() {
+  const loadUserFromStorage = async () => {
     try {
-      const saved = await AsyncStorage.getItem(STORAGE_KEY);
-      if (saved) setUser(JSON.parse(saved));
-    } catch (e) {
-      console.log("Erro ao carregar usuário:", e);
+      setIsLoading(true);
+      const currentUserEmail = await AsyncStorage.getItem('currentUser');
+      if (currentUserEmail) {
+        const storedUsers = await AsyncStorage.getItem('users');
+        const users = storedUsers ? JSON.parse(storedUsers) : [];
+        const currentUser = users.find(u => u.email === currentUserEmail);
+        if (currentUser) {
+          setUser(currentUser);
+        }
+      }
+    } catch (error) {
+      console.log('Erro ao carregar usuário:', error);
+    } finally {
+      setIsLoading(false);
     }
-    setLoading(false);
-  }
+  };
 
-  // -------------------------
-  // 🔐 Registrar usuário local
-  // -------------------------
-  async function register(name, email, password) {
-    const encryptedPass = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      password
-    );
-
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      password: encryptedPass,
-    };
-
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    setUser(newUser);
-
-    return true;
-  }
-
-  // -------------------------
-  // 🔓 Login local autenticado
-  // -------------------------
-  async function login(email, password) {
-    const saved = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!saved) return false;
-
-    const savedUser = JSON.parse(saved);
-    const encryptedPass = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      password
-    );
-
-    if (savedUser.email === email && savedUser.password === encryptedPass) {
-      setUser(savedUser);
-      return true;
+  const updateUser = async (updatedUser) => {
+    try {
+      setUser(updatedUser);
+      
+      // Atualiza também no AsyncStorage
+      const storedUsers = await AsyncStorage.getItem('users');
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      const userIndex = users.findIndex(u => u.email === user.email);
+      if (userIndex !== -1) {
+        users[userIndex] = { ...users[userIndex], ...updatedUser };
+        await AsyncStorage.setItem('users', JSON.stringify(users));
+        
+        // Se o email foi alterado, atualiza também o currentUser
+        if (updatedUser.email !== user.email) {
+          await AsyncStorage.setItem('currentUser', updatedUser.email);
+        }
+      }
+    } catch (error) {
+      console.log('Erro ao atualizar usuário:', error);
+      throw error;
     }
+  };
 
-    return false;
-  }
+  const login = async (userData) => {
+    try {
+      setUser(userData);
+      await AsyncStorage.setItem('currentUser', userData.email);
+    } catch (error) {
+      console.log('Erro ao fazer login:', error);
+      throw error;
+    }
+  };
 
-  // -------------------------
-  // ✏ Atualizar dados locais
-  // -------------------------
-  async function updateUser(data) {
-    const updated = { ...user, ...data };
-    setUser(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  }
-
-  // -------------------------
-  // 🚪 Logout local
-  // -------------------------
-  async function logout() {
-    setUser(null);
-  }
+  const logout = async () => {
+    try {
+      setUser(null);
+      await AsyncStorage.removeItem('currentUser');
+    } catch (error) {
+      console.log('Erro ao fazer logout:', error);
+      throw error;
+    }
+  };
 
   return (
-    <LocalAuthContext.Provider
-      value={{
-        user,
-        loading,
-        register,
-        login,
-        updateUser,
-        logout,
-      }}
-    >
+    <LocalAuthContext.Provider value={{
+      user,
+      isLoading,
+      updateUser,
+      login,
+      logout,
+      loadUserFromStorage
+    }}>
       {children}
     </LocalAuthContext.Provider>
   );
-}
-
-export function useLocalAuth() {
-  return useContext(LocalAuthContext);
 }

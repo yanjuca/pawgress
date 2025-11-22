@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// screens/PawgressSignUpScreen.js
+import React, { useState, useContext } from 'react';
 import {
   StyleSheet,
   View,
@@ -17,12 +18,15 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
+import { LocalAuthContext } from '../engine/LocalAuthEngine';
 
 export default function PawgressSignUpScreen() {
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
+  const { login } = useContext(LocalAuthContext);
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -56,6 +60,8 @@ export default function PawgressSignUpScreen() {
     }
 
     try {
+      setIsLoading(true);
+      
       // Hash da senha
       const passwordHash = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
@@ -73,9 +79,9 @@ export default function PawgressSignUpScreen() {
         return;
       }
 
-      // Novo usuário
+      // Novo usuário - usando 'name' para manter consistência com a tela de editar perfil
       const newUser = {
-        nome: nomeCompleto,
+        name: nomeCompleto,
         email,
         passwordHash,
       };
@@ -84,16 +90,21 @@ export default function PawgressSignUpScreen() {
 
       // Salva no AsyncStorage
       await AsyncStorage.setItem('users', JSON.stringify(users));
+      
+      // Faz login automaticamente após cadastro
+      await login(newUser);
 
       Alert.alert('Sucesso 🎉', 'Conta criada com sucesso!', [
         {
-          text: 'Ir para Login',
-          onPress: () => navigation.navigate('Login'),
+          text: 'Ir para home',
+          onPress: () => navigation.navigate('Home'),
         },
       ]);
     } catch (error) {
       console.log(error);
       Alert.alert('Erro', 'Não foi possível concluir o cadastro.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -129,6 +140,7 @@ export default function PawgressSignUpScreen() {
                 onChangeText={setNomeCompleto}
                 style={styles.input}
                 autoCapitalize="words"
+                editable={!isLoading}
               />
 
               <TextInput
@@ -139,6 +151,7 @@ export default function PawgressSignUpScreen() {
                 style={[styles.input, { marginTop: 12 }]}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                editable={!isLoading}
               />
 
               <TextInput
@@ -149,12 +162,14 @@ export default function PawgressSignUpScreen() {
                 onChangeText={setSenha}
                 style={[styles.input, { marginTop: 12 }]}
                 autoCapitalize="none"
+                editable={!isLoading}
               />
 
               <TouchableOpacity
-                style={styles.loginWrapper}
+                style={[styles.loginWrapper, isLoading && styles.disabledButton]}
                 activeOpacity={0.85}
                 onPress={handleCadastro}
+                disabled={isLoading}
               >
                 <LinearGradient
                   colors={['#c8e99a', '#9fdc7c']}
@@ -162,14 +177,17 @@ export default function PawgressSignUpScreen() {
                   end={[1, 1]}
                   style={styles.loginBtn}
                 >
-                  <Text style={styles.loginText}>cadastrar</Text>
+                  <Text style={styles.loginText}>
+                    {isLoading ? 'Cadastrando...' : 'cadastrar'}
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.createAccountBtn}
+                style={[styles.createAccountBtn, isLoading && styles.disabledButton]}
                 activeOpacity={0.7}
                 onPress={() => navigation.navigate('Login')}
+                disabled={isLoading}
               >
                 <Text style={styles.createAccountText}>
                   já tem conta? <Text style={styles.createAccountBold}>entrar</Text>
@@ -211,4 +229,5 @@ const styles = StyleSheet.create({
   createAccountBtn: { marginTop: 16, alignItems: 'center', paddingVertical: 10 },
   createAccountText: { color: 'rgba(255,255,255,0.7)', fontSize: 14 },
   createAccountBold: { color: '#c8e99a', fontWeight: '700' },
+  disabledButton: { opacity: 0.6 },
 });
