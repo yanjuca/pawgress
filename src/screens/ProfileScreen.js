@@ -39,10 +39,15 @@ export default function ProfileScreen({ navigation }) {
       />
 
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        
         <View style={styles.container}>
           {/* Título */}
           <View style={styles.headerContainer}>
-            <Text style={styles.headerTitle}>perfil</Text>
+            <Image 
+              source={require('../../assets/pawgresslogo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
 
           {/* Card com as opções */}
@@ -95,6 +100,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
+  logoContainer: {
+    marginBottom: 30, alignItems: 'center' },
+  logo:{
+    width: 200, height: 200, marginBottom: -70 },
   backgroundImage: {
     position: 'absolute',
     width: '100%',

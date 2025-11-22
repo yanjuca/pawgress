@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Image,
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -45,7 +46,7 @@ export default function PawgressLoginScreen() {
       );
 
       if (user) {
-        Alert.alert('Bem-vindo!', 'Login realizado com sucesso!');
+        //Alert.alert('Bem-vindo!', 'Login realizado com sucesso!');
         navigation.navigate('Home');
       } else {
         Alert.alert('Erro', 'Email ou senha incorretos.');
@@ -57,90 +58,94 @@ export default function PawgressLoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <View style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-
-      <LinearGradient
-        colors={['#9d7350', '#2d3a2c']}
-        start={[0.5, 0]}
-        end={[0.5, 1]}
-        style={styles.background}
+      
+      {/* Fundo - mesma imagem do cadastro */}
+      <Image 
+        source={require('../../assets/background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>pawgress</Text>
-        </View>
-
-        <BlurView intensity={60} tint="dark" style={styles.cardBlur}>
-          <View style={styles.cardInner}>
-            <TextInput
-              placeholder="email"
-              placeholderTextColor="rgba(255,255,255,0.7)"
-              value={email}
-              onChangeText={setEmail}
-              style={styles.input}
-              keyboardType="email-address"
-              autoCapitalize="none"
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
+        >
+          {/* Logo - mesma da tela de cadastro */}
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../../assets/pawgresslogo.png')}
+              style={styles.logo}
+              resizeMode="contain"
             />
-
-            <TextInput
-              placeholder="password"
-              placeholderTextColor="rgba(255,255,255,0.7)"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-              style={[styles.input, { marginTop: 12 }]}
-              autoCapitalize="none"
-            />
-
-            <TouchableOpacity
-              style={styles.loginWrapper}
-              activeOpacity={0.85}
-              onPress={handleLogin}
-            >
-              <LinearGradient
-                colors={['#c8e99a', '#9fdc7c']}
-                start={[0, 0]}
-                end={[1, 1]}
-                style={styles.loginBtn}
-              >
-                <Text style={styles.loginText}>login</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{ marginTop: 15 }}
-              onPress={() => navigation.navigate('SignUp')}
-            >
-              <Text style={{ color: '#fff', textAlign: 'center' }}>
-                não tem conta? <Text style={{ fontWeight: 'bold', color: '#c8e99a' }}>Cadastre-se</Text>
-              </Text>
-            </TouchableOpacity>
           </View>
-        </BlurView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          {/* Card de Login */}
+          <BlurView intensity={100} tint="dark" style={styles.cardBlur}>
+            <View style={styles.cardInner}>
+              <TextInput
+                placeholder="email"
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+
+              <TextInput
+                placeholder="senha"
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                style={[styles.input, { marginTop: 12 }]}
+                autoCapitalize="none"
+              />
+
+              <TouchableOpacity
+                style={styles.loginWrapper}
+                activeOpacity={0.85}
+                onPress={handleLogin}
+              >
+                <LinearGradient
+                  colors={['#c8e99a', '#9fdc7c']}
+                  start={[0, 0]}
+                  end={[1, 1]}
+                  style={styles.loginBtn}
+                >
+                  <Text style={styles.loginText}>login</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.createAccountBtn}
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('SignUp')}
+              >
+                <Text style={styles.createAccountText}>
+                  não tem conta? <Text style={styles.createAccountBold}>cadastrar</Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#2d3a2c' },
-  background: { ...StyleSheet.absoluteFillObject },
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  titleContainer: { marginBottom: 50 },
-  title: {
-    fontSize: 46,
-    fontWeight: '700',
-    color: '#fff',
-    textTransform: 'lowercase',
-    letterSpacing: 1.5,
-  },
+  safe: { flex: 1, backgroundColor: 'transparent' },
+  backgroundImage: { position: 'absolute', width: '100%', height: '100%' },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
+  logoContainer: { marginBottom: 30, alignItems: 'center' },
+  logo: { width: 200, height: 200, marginBottom: -70 },
   cardBlur: {
-    width: '85%',
+    width: '100%',
+    maxWidth: 400,
     borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -157,4 +162,7 @@ const styles = StyleSheet.create({
   loginWrapper: { marginTop: 20 },
   loginBtn: { paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   loginText: { color: '#2d3a2c', fontWeight: '700', fontSize: 16, textTransform: 'uppercase' },
+  createAccountBtn: { marginTop: 16, alignItems: 'center', paddingVertical: 10 },
+  createAccountText: { color: 'rgba(255,255,255,0.7)', fontSize: 14, textTransform: 'lowercase' },
+  createAccountBold: { color: '#c8e99a', fontWeight: '700' },
 });
