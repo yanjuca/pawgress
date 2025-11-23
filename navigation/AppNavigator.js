@@ -11,15 +11,20 @@ import AddPetScreen from "../src/screens/AddPetScreen";
 import ProfileScreen from "../src/screens/ProfileScreen";
 import EditProfileScreen from "../src/screens/EditProfileScreen";
 
-
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   const { user } = useContext(LocalAuthContext);
-
+  
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={user ? "Home" : "SignUp"} screenOptions={{ headerShown: false }}>
+      <Stack.Navigator 
+        initialRouteName={user ? "Home" : "SignUp"} 
+        screenOptions={{ 
+          headerShown: false,
+          animation: 'none', // ✨ Desabilita todas as animações
+        }}
+      >
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
