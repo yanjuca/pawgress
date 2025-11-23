@@ -923,6 +923,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textTransform: 'lowercase',
   },
+
+  // Input Groups
   inputGroup: {
     flexDirection: 'row',
     marginBottom: 12,
@@ -956,6 +958,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
   },
+
+  // Gender Selection
   genderContainer: {
     flexDirection: 'row',
     gap: 8,
@@ -982,6 +986,8 @@ const styles = StyleSheet.create({
   genderButtonTextActive: {
     color: '#c8e99a',
   },
+
+  // Buttons
   buttonContainer: {
     flexDirection: 'row',
     gap: 12,
