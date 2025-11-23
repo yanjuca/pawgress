@@ -12,24 +12,7 @@ export const usePet = () => {
 
 export const PetProvider = ({ children }) => {
   const [pets, setPets] = useState([
-    {
-      id: 1,
-      name: 'Pibble',
-      species: 'Dog',
-      breed: 'Mixed',
-      image: 'https://heapet.com/cdn/shop/articles/what-is-a-pibble-dog-smile_7b0f5b3b-0901-48a5-8e7e-0f48f3417712.webp?v=1751761402',
-      healthStatus: 'Great Pawgress!',
-      healthScore: 95,
-      lastCheckup: 'Dr. Evans (Vetamin Clinic) on 10/20/2025',
-      weight: '4.5 kg',
-      weightStatus: 'On target for age',
-      energy: 'High',
-      energyDetail: 'Daily walks to play',
-      upcoming: [
-        { item: 'Vaccine Booster', date: 'Due 11/25/2025', priority: 'high' },
-        { item: 'Flea/Tick Prevention', date: 'Due 11/01/2025', priority: 'medium' },
-      ],
-    }
+
   ]);
 
   const addPet = (newPet) => {
