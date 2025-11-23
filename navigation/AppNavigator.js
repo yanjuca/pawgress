@@ -1,63 +1,37 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useContext } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { LocalAuthContext } from "../src/engine/LocalAuthEngine";
 
-// 👇 Ajustei todos os imports para refletir a estrutura real
-import SignUpScreen from '../src/screens/SignUpScreen';
-import HomeScreen from '../src/screens/HomeScreen';
-import LoginScreen from '../src/screens/LoginScreen';
-import AddPetScreen from '../src/screens/AddPetScreen';
-import ProfileScreen from '../src/screens/ProfileScreen';
-import EditProfileScreen from '../src/screens/EditProfileScreen';
-import SettingsScreen from '../src/screens/SettingsScreens'; // 👈 Nome correto do arquivo
+// Telas
+import SignUpScreen from "../src/screens/SignUpScreen";
+import LoginScreen from "../src/screens/LoginScreen";
+import HomeScreen from "../src/screens/HomeScreen";
+import AddPetScreen from "../src/screens/AddPetScreen";
+import ProfileScreen from "../src/screens/ProfileScreen";
+import EditProfileScreen from "../src/screens/EditProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
+  const { user } = useContext(LocalAuthContext);
+  
   return (
-    <Stack.Navigator initialRouteName="SignUp">
-      
-      <Stack.Screen 
-        name="SignUp" 
-        component={SignUpScreen}
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen 
-        name="Login" 
-        component={LoginScreen} 
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen 
-        name="Home"
-        component={HomeScreen}
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="AddPet" 
-        component={AddPetScreen} 
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="Profile" 
-        component={ProfileScreen} 
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="EditProfile" 
-        component={EditProfileScreen} 
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="Settings" 
-        component={SettingsScreen} 
-        options={{ headerShown: false }}
-      />
-
-    </Stack.Navigator>
+    <NavigationContainer>
+      <Stack.Navigator 
+        initialRouteName={user ? "Home" : "SignUp"} 
+        screenOptions={{ 
+          headerShown: false,
+          animation: 'none', // ✨ Desabilita todas as animações
+        }}
+      >
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="AddPet" component={AddPetScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }

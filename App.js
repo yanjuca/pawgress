@@ -1,11 +1,19 @@
-import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import AppNavigator from './navigation/AppNavigator';
+import React from "react";
+import { LogBox } from "react-native";
+import AppNavigator from "./navigation/AppNavigator";
+import { LocalAuthProvider } from "./src/engine/LocalAuthEngine";
+import { PetProvider } from "./context/PetContext";
+
+// Desabilita TODOS os avisos e logs
+LogBox.ignoreAllLogs();
+console.disableYellowBox = true;
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <AppNavigator />
-    </NavigationContainer>
+    <LocalAuthProvider>
+      <PetProvider>
+        <AppNavigator />
+      </PetProvider>
+    </LocalAuthProvider>
   );
 }

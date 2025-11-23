@@ -1,29 +1,95 @@
 
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { ChevronLeft, Edit, User, Mail } from 'lucide-react-native';
+import React, { useContext, useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  ScrollView,
+  TextInput,
+  Alert,
+  ActivityIndicator
+} from 'react-native';
 
-export default function ProfileScreen({ navigation }) {
-  // Dados do usuário (aqui você pegaria do contexto/API)
-  const userName = 'Fernando de Medeiros';
-  const userEmail = 'Eumermo@gmail.com';
+import { ChevronLeft, User, Mail, Save } from 'lucide-react-native';
+import { LocalAuthContext } from '../engine/LocalAuthEngine';
+
+export default function EditProfileScreen({ navigation }) {
+  
+  const { user, updateUser, isLoading } = useContext(LocalAuthContext);
+
+  // Estados locais para edição
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Atualiza os estados quando o usuário carrega
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!name.trim() || !email.trim()) {
+      Alert.alert('Erro', 'Preencha todos os campos.');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      Alert.alert('Erro', 'Digite um email válido.');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await updateUser({
+        ...user,
+        name: name.trim(),
+        email: email.trim(),
+      });
+      
+      Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+      navigation.goBack();
+    } catch (error) {
+      console.log('Erro ao salvar:', error);
+      Alert.alert('Erro', 'Não foi possível salvar as alterações.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#fff" />
+        <Text style={styles.loadingText}>Carregando...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
+
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.goBack()}
+            disabled={isSaving}
           >
             <ChevronLeft color="white" size={24} />
           </TouchableOpacity>
-          <Text style={styles.title}>Meu Perfil</Text>
+
+          <Text style={styles.title}>Editar Perfil</Text>
+
           <View style={{ width: 24 }} />
         </View>
 
-        <ScrollView style={styles.content}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+
           {/* Avatar */}
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
@@ -31,40 +97,52 @@ export default function ProfileScreen({ navigation }) {
             </View>
           </View>
 
-          {/* Informações do Usuário */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <User color="#999" size={20} />
-              <View style={styles.infoText}>
-                <Text style={styles.infoLabel}>Nome</Text>
-                <Text style={styles.infoValue}>{userName}</Text>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.infoRow}>
-              <Mail color="#999" size={20} />
-              <View style={styles.infoText}>
-                <Text style={styles.infoLabel}>Email</Text>
-                <Text style={styles.infoValue}>{userEmail}</Text>
-              </View>
-            </View>
+          {/* Campo Nome */}
+          <Text style={styles.label}>Nome</Text>
+          <View style={styles.inputContainer}>
+            <User color="#888" size={18} />
+            <TextInput 
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Seu nome"
+              placeholderTextColor="#aaa"
+              editable={!isSaving}
+            />
           </View>
 
-          {/* Botão Editar Perfil */}
+          {/* Campo Email */}
+          <Text style={styles.label}>Email</Text>
+          <View style={styles.inputContainer}>
+            <Mail color="#888" size={18} />
+            <TextInput 
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Seu email"
+              keyboardType="email-address"
+              placeholderTextColor="#aaa"
+              autoCapitalize="none"
+              editable={!isSaving}
+            />
+          </View>
+
+          {/* Salvar */}
           <TouchableOpacity 
-            style={styles.editButton}
-            onPress={() => navigation.navigate('EditProfile')}
+            style={[styles.saveButton, isSaving && styles.disabledButton]}
+            onPress={handleSave}
+            disabled={isSaving}
           >
-            <Edit color="white" size={20} />
-            <Text style={styles.editButtonText}>Editar Perfil</Text>
+            {isSaving ? (
+              <ActivityIndicator color="white" size="small" />
+            ) : (
+              <Save color="white" size={20} />
+            )}
+            <Text style={styles.saveButtonText}>
+              {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+            </Text>
           </TouchableOpacity>
 
-          {/* Outros botões/opções */}
-          <TouchableOpacity style={styles.logoutButton}>
-            <Text style={styles.logoutButtonText}>Sair da Conta</Text>
-          </TouchableOpacity>
         </ScrollView>
       </View>
     </View>
@@ -78,6 +156,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#6b7069',
     padding: 16,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 10,
+    fontSize: 16,
   },
   card: {
     width: '100%',
@@ -120,38 +207,29 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  infoCard: {
-    backgroundColor: 'rgba(50, 50, 50, 0.5)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+  label: {
+    color: 'white',
+    marginBottom: 6,
+    marginLeft: 4,
+    fontSize: 14,
   },
-  infoRow: {
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    backgroundColor: 'rgba(50, 50, 50, 0.5)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  infoText: {
+  input: {
     flex: 1,
-  },
-  infoLabel: {
-    color: '#999',
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  infoValue: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: '500',
+    padding: 12,
+    fontSize: 15,
   },
-  divider: {
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginVertical: 16,
-  },
-  editButton: {
+  saveButton: {
     backgroundColor: 'rgba(70, 130, 70, 0.9)',
     borderRadius: 8,
     padding: 14,
@@ -159,22 +237,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
+    marginTop: 10,
   },
-  editButtonText: {
+  saveButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  logoutButton: {
-    backgroundColor: 'rgba(180, 50, 50, 0.7)',
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-  },
-  logoutButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+  disabledButton: {
+    opacity: 0.6,
   },
 });
