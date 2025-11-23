@@ -6,10 +6,11 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
+  Alert,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, User as UserIcon, MessageCircle, LogOut } from 'lucide-react-native';
+import { ArrowLeft, User, MessageCircle, LogOut } from 'lucide-react-native';
 
 export default function ProfileScreen({ navigation }) {
   const handleEditProfile = () => {
@@ -18,8 +19,8 @@ export default function ProfileScreen({ navigation }) {
   };
 
   const handleHelp = () => {
+    Alert.alert('Página ainda em construção');
     console.log('Ajuda e Feedback');
-    // navigation.navigate('Help'); // Descomente se implementar a tela de ajuda
   };
 
   const handleLogout = () => {
@@ -60,7 +61,7 @@ export default function ProfileScreen({ navigation }) {
         <View style={styles.container}>
           {/* Título */}
           <View style={styles.headerContainer}>
-            <Text style={styles.headerTitle}>perfil</Text>
+            {/* <Text style={styles.headerTitle}>perfil</Text> */}
           </View>
 
           {/* Card com as opções */}
@@ -74,7 +75,7 @@ export default function ProfileScreen({ navigation }) {
               >
                 <View style={styles.optionBtn}>
                   <View style={styles.optionIconWrapper}>
-                    <UserIcon color="#c8e99a" size={20} />
+                    <User color="#c8e99a" size={20} />
                   </View>
                   <Text style={styles.optionText}>editar perfil</Text>
                 </View>

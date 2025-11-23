@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// screens/PawgressSignUpScreen.js
+import React, { useState, useContext } from 'react';
 import {
   StyleSheet,
   View,
@@ -15,67 +16,103 @@ import { BlurView } from 'expo-blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
+import { LocalAuthContext } from '../engine/LocalAuthEngine';
 
 export default function PawgressSignUpScreen() {
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
+  const { login } = useContext(LocalAuthContext);
 
-  // 🔎 Validações simples
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const validatePassword = (senha) => {
-    // Pelo menos 8 caracteres, uma maiúscula, um número e um símbolo
     const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return regex.test(senha);
   };
 
-  const handleCadastro = () => {
-    console.log('Tentando cadastro com:', nomeCompleto, email, senha);
-
-    // Verifica campos vazios
+  const handleCadastro = async () => {
     if (!nomeCompleto.trim() || !email.trim() || !senha.trim()) {
-      Alert.alert('Campos obrigatórios', 'Preencha todos os campos para continuar.');
+      Alert.alert('Campos obrigatórios', 'Preencha todos os campos.');
       return;
     }
 
-    // Valida o nome (mínimo 3 caracteres)
     if (nomeCompleto.trim().length < 3) {
       Alert.alert('Nome inválido', 'Digite seu nome completo.');
       return;
     }
 
-    // Valida o formato do e-mail
     if (!validateEmail(email)) {
-      Alert.alert('E-mail inválido', 'Digite um e-mail válido (ex: exemplo@email.com).');
+      Alert.alert('E-mail inválido', 'Digite um e-mail válido.');
       return;
     }
 
-    // Valida força da senha
     if (!validatePassword(senha)) {
       Alert.alert(
         'Senha fraca',
-        'Sua senha deve conter:\n• Pelo menos 8 caracteres\n• Uma letra maiúscula\n• Um número\n• Um símbolo (@, #, !, etc.)'
+        'Sua senha deve conter:\n• 8 caracteres\n• 1 letra maiúscula\n• 1 número\n• 1 símbolo'
       );
       return;
     }
 
-    // Caso tudo esteja certo
-    Alert.alert('Cadastro concluído 🎉', 'Conta criada com sucesso!', [
-      {
-        text: 'Ir para home',
-        onPress: () => navigation.navigate('Home'),
-      },
-    ]);
+    try {
+      setIsLoading(true);
+      
+      // Hash da senha
+      const passwordHash = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        senha
+      );
+
+      // Carrega usuários do storage
+      const storedUsers = await AsyncStorage.getItem('users');
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+
+      // Verifica se email já existe
+      const exists = users.some((u) => u.email === email);
+      if (exists) {
+        Alert.alert('E-mail já cadastrado', 'Use outro e-mail.');
+        return;
+      }
+
+      // Novo usuário - usando 'name' para manter consistência com a tela de editar perfil
+      const newUser = {
+        name: nomeCompleto,
+        email,
+        passwordHash,
+      };
+
+      users.push(newUser);
+
+      // Salva no AsyncStorage
+      await AsyncStorage.setItem('users', JSON.stringify(users));
+      
+      // Faz login automaticamente após cadastro
+      await login(newUser);
+
+      Alert.alert('Sucesso 🎉', 'Conta criada com sucesso!', [
+        {
+          text: 'Ir para home',
+          onPress: () => navigation.navigate('Home'),
+        },
+      ]);
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Erro', 'Não foi possível concluir o cadastro.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <View style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      
-      {/* Fundo */}
-      <Image 
+
+      <Image
         source={require('../../assets/background.png')}
         style={styles.backgroundImage}
         resizeMode="cover"
@@ -86,16 +123,14 @@ export default function PawgressSignUpScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.container}
         >
-          {/* Logo */}
           <View style={styles.logoContainer}>
-            <Image 
+            <Image
               source={require('../../assets/pawgresslogo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
           </View>
 
-          {/* Card de Cadastro */}
           <BlurView intensity={100} tint="dark" style={styles.cardBlur}>
             <View style={styles.cardInner}>
               <TextInput
@@ -105,6 +140,7 @@ export default function PawgressSignUpScreen() {
                 onChangeText={setNomeCompleto}
                 style={styles.input}
                 autoCapitalize="words"
+                editable={!isLoading}
               />
 
               <TextInput
@@ -115,6 +151,7 @@ export default function PawgressSignUpScreen() {
                 style={[styles.input, { marginTop: 12 }]}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                editable={!isLoading}
               />
 
               <TextInput
@@ -125,12 +162,14 @@ export default function PawgressSignUpScreen() {
                 onChangeText={setSenha}
                 style={[styles.input, { marginTop: 12 }]}
                 autoCapitalize="none"
+                editable={!isLoading}
               />
 
-              <TouchableOpacity 
-                style={styles.loginWrapper} 
+              <TouchableOpacity
+                style={[styles.loginWrapper, isLoading && styles.disabledButton]}
                 activeOpacity={0.85}
                 onPress={handleCadastro}
+                disabled={isLoading}
               >
                 <LinearGradient
                   colors={['#c8e99a', '#9fdc7c']}
@@ -138,14 +177,17 @@ export default function PawgressSignUpScreen() {
                   end={[1, 1]}
                   style={styles.loginBtn}
                 >
-                  <Text style={styles.loginText}>cadastrar</Text>
+                  <Text style={styles.loginText}>
+                    {isLoading ? 'Cadastrando...' : 'cadastrar'}
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={styles.createAccountBtn}
+              <TouchableOpacity
+                style={[styles.createAccountBtn, isLoading && styles.disabledButton]}
                 activeOpacity={0.7}
                 onPress={() => navigation.navigate('Login')}
+                disabled={isLoading}
               >
                 <Text style={styles.createAccountText}>
                   já tem conta? <Text style={styles.createAccountBold}>entrar</Text>
@@ -160,7 +202,7 @@ export default function PawgressSignUpScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: 'transparent' },
+  safe: { flex: 1 },
   backgroundImage: { position: 'absolute', width: '100%', height: '100%' },
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
   logoContainer: { marginBottom: 30, alignItems: 'center' },
@@ -183,8 +225,9 @@ const styles = StyleSheet.create({
   },
   loginWrapper: { marginTop: 20 },
   loginBtn: { paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
-  loginText: { color: '#2d3a2c', fontWeight: '700', fontSize: 16, textTransform: 'uppercase' },
+  loginText: { color: '#2d3a2c', fontWeight: '700', fontSize: 16 },
   createAccountBtn: { marginTop: 16, alignItems: 'center', paddingVertical: 10 },
-  createAccountText: { color: 'rgba(255,255,255,0.7)', fontSize: 14, textTransform: 'lowercase' },
+  createAccountText: { color: 'rgba(255,255,255,0.7)', fontSize: 14 },
   createAccountBold: { color: '#c8e99a', fontWeight: '700' },
+  disabledButton: { opacity: 0.6 },
 });
